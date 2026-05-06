@@ -21,12 +21,13 @@ def setup_amon_house():
 
     rooms["Front Door"] = Room(
         "The Front Door",
-        "A heavy oak door stands north before you, barred from the inside. The path back to the gate lies south, but the house fills your attention like a held breath. A brass knocker in the shape of a gargoyle leers from the center panel, its open mouth polished by long use and bad weather.",
+        "A heavy oak door stands north before you, barred from the inside. The path back to the gate lies south, but the house fills your attention like a held breath. At eye level, a brass knocker in the shape of a gargoyle leers from the center panel, its open mouth polished by long use and bad weather.",
         "The door pulses like a beating heart, and the wood seems less built than grown around whatever waits inside. South, the path to the gate thins into shadow. North, the door waits with the patience of something that knows the difference between force and invitation, while the gargoyle's eyes flicker red.",
         {"south": "Front Gate"}, # North is locked!
         scenery={
-            "knocker": "It's a heavy brass gargoyle. Its mouth is open as if to scream.",
-            "door": "The oak is ancient and scarred. It is currently locked tight."
+            "knocker": "The gargoyle knocker is heavy brass, mounted exactly where a visitor's hand would fall. Its open mouth looks made for a hard, ringing knock.",
+            "gargoyle": "The brass gargoyle is not just decoration. Its lower jaw hangs as a knocker, polished bright where other hands have lifted it.",
+            "door": "The oak is ancient and scarred. It is currently locked tight, but the brass gargoyle knocker sits ready at the center panel."
         }
     )
 

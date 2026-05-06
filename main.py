@@ -366,7 +366,7 @@ def play():
                     f"You head {obj}. The house yields the path, though reluctantly."
                 ))
             elif obj == "north" and gs.current_room == "Front Door" and not gs.door_unlocked:
-                print("The door is locked. Perhaps you should announce yourself?")
+                print("The door is locked from within. The brass gargoyle knocker waits at eye level, polished by visitors who knew better than to shove.")
             elif obj == "up" and gs.current_room == "Upstairs Hallway" and not gs.attic_unlocked:
                 print("The Attic door is locked. Grandma is busy with her 'guests'.")
             else:
@@ -423,6 +423,11 @@ def play():
                     print("The silver teapot is immaculate despite the dust around it. Its lid trembles now and then, as if something inside is breathing.")
             elif obj in ("cups", "teacups") and gs.current_room == "Attic":
                 print("For an instant you see nothing. Then the air dimples. Handles, rims, and pale reflections appear and vanish as invisible hands test their place settings.")
+            elif gs.current_room == "Front Door" and obj in ("door", "front door"):
+                if gs.door_unlocked:
+                    print("The heavy oak door stands open now, with the dark foyer waiting north.")
+                else:
+                    print("The oak door is barred from the inside. The only part that looks handled is the brass gargoyle knocker set into the center panel.")
             elif obj in room.scenery:
                 print(room.scenery[obj])
             else:
@@ -506,6 +511,11 @@ def play():
                 room.items["hearth ash"] = ["ash", "cinders", "hearth ash"]
                 print("Beneath the screaming blue flame, you notice a bed of pale hearth ash that has somehow escaped burning.")
                 print("It does not glow like the rest of the hearth. Instead it seems to drink the blue light out of the flame above it, turning warmth into hush.")
+            elif gs.current_room == "Front Door":
+                if gs.door_unlocked:
+                    print("The door is open now. The gargoyle knocker hangs still, its duty satisfied.")
+                else:
+                    print("You search the door and find no handle, latch, or keyhole on this side. Only the brass gargoyle knocker has been touched often enough to shine.")
             else:
                 trance_text = trance_search_text(gs) if gs.trance else None
                 if trance_text:
@@ -737,7 +747,7 @@ def play():
                 if gs.door_unlocked:
                     print("The door is already open enough to pass through.")
                 else:
-                    print("It refuses to budge. Something more ceremonial than force is expected here.")
+                    print("It refuses to budge. No handle gives way under your hand; only the brass gargoyle knocker seems meant to move.")
             elif gs.current_room == "Upstairs Hallway" and obj in ("door", "attic"):
                 if gs.attic_unlocked:
                     print("The attic door groans open above you.")
@@ -795,7 +805,7 @@ def play():
                 ))
 
         elif v == "knock":
-            if gs.current_room == "Front Door" and (obj == "knocker" or obj == "door"):
+            if gs.current_room == "Front Door" and (obj in (None, "knocker", "gargoyle", "door", "front door")):
                 if not gs.door_unlocked:
                     print("\n*CLANG... CLANG... CLANG*")
                     print("Grandma: 'I knew it was You at the door!'")
@@ -909,7 +919,18 @@ def play():
             held_item = resolve_item(gs, obj, "inventory") if obj else None
             target_name = i_obj or prep
 
-            if held_item and is_weapon(held_item) and target_name in ("mother", "mom", "grandma", "grandmother", "missy", "sister"):
+            if gs.current_room == "Front Door" and not held_item and obj in ("knocker", "gargoyle", "door", "front door"):
+                if not gs.door_unlocked:
+                    print("\n*CLANG... CLANG... CLANG*")
+                    print("Grandma: 'I knew it was You at the door!'")
+                    print("You hear the heavy bolt slide back. The door is now open.")
+                    gs.door_unlocked = True
+                    room.exits["north"] = "Foyer"
+                    room.desc = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied."
+                    room.scenery["door"] = "The door is now unlocked and slightly ajar."
+                else:
+                    print("The door is already open.")
+            elif held_item and is_weapon(held_item) and target_name in ("mother", "mom", "grandma", "grandmother", "missy", "sister"):
                 handle_attack(gs, room, target_name, held_item)
                 if gs.game_over:
                     break
