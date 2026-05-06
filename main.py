@@ -818,7 +818,7 @@ def play():
                     room.scenery["door"] = "The door is now unlocked and slightly ajar."
                 else:
                     print("The door is already open.")
-            elif gs.current_room == "Upstairs Hallway" and (obj == "door" or obj == "attic") and gs.attic_primed:
+            elif gs.current_room == "Upstairs Hallway" and obj in (None, "door", "attic", "attic door") and gs.attic_primed:
                 print("\nYou knock once. The sound is swallowed immediately.")
                 print("From beyond the door, something whispers your name with the tenderness of recognition and the chill of ownership.")
                 print("The attic lock slides back of its own accord.")
