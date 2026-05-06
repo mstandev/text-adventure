@@ -3,22 +3,37 @@
 class AdvancedParser:
     def __init__(self):
         self.synonyms = {
-            "go": ["walk", "run", "move", "north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"],
+            "go": ["walk", "run", "north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"],
             "take": ["get", "grab", "pick", "collect", "take"],
-            "examine": ["look", "read", "check", "inspect", "examine", "peek"],
-            "use": ["apply", "put", "place", "pour", "give", "use"],
+            "drop": ["drop", "leave", "discard"],
+            "examine": ["look", "check", "inspect", "examine", "peek"],
+            "use": ["apply", "put", "place", "give", "cast", "scatter", "use"],
             "inventory": ["i", "items", "bag", "inventory"],
-            "unlock": ["open", "unlock"],
+            "unlock": ["unlock"],
             "drink": ["sip", "gulp", "consume", "drink"],
             "knock": ["bang", "rap", "tap", "knock", "use"],
-            "look": ["l", "view", "describe"]
+            "look": ["l", "view", "describe"],
+            "search": ["search", "feel", "probe"],
+            "listen": ["listen", "hear"],
+            "talk": ["talk", "speak"],
+            "ask": ["ask"],
+            "show": ["show"],
+            "read": ["read"],
+            "smell": ["smell", "sniff"],
+            "open": ["open"],
+            "close": ["close", "shut"],
+            "move": ["move", "push", "pull", "drag", "lift"],
+            "pour": ["pour", "spill"],
+            "light": ["light", "ignite", "burn"],
+            "attack": ["attack", "kill", "hit", "strike", "swing", "slash", "murder", "stab", "chop"],
+            "help": ["help", "commands", "?"]
         }
         self.direction_map = {
             "n": "north", "north": "north", "s": "south", "south": "south",
             "e": "east", "east": "east", "w": "west", "west": "west",
             "u": "up", "up": "up", "d": "down", "down": "down"
         }
-        self.prepositions = ["with", "on", "in", "at", "to"]
+        self.prepositions = ["with", "using", "on", "in", "at", "to", "about", "into", "across", "over"]
         self.ignored = ["the", "a", "an", "some"]
 
     def parse(self, user_input):
@@ -55,9 +70,27 @@ class GameState:
         self.rooms = rooms
         self.inventory = {}
         self.trance = False
+        self.weakened_trance = False
         self.current_room = "Front Gate"
         self.door_unlocked = False
         self.attic_unlocked = False
+        self.attic_primed = False
+        self.read_invitation = False
+        self.moved_portraits = False
+        self.spoke_with_mother = False
+        self.attic_seen = False
+        self.tea_invited = False
+        self.attic_choice = None
+        self.bandage_taken = False
+        self.witness_awakened = False
+        self.ash_revealed = False
+        self.teapot_smothered = False
+        self.ritual_branch = None
+        self.branch_scene_seen = False
+        self.discovered_witness = False
+        self.missy_heard = False
+        self.dead_characters = set()
+        self.game_over = False
 
     def get_matches(self, name, context="room"):
         """Returns a list of item_ids that match the given alias."""

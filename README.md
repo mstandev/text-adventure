@@ -15,12 +15,21 @@ python3 main.py
 Type commands such as:
 
 ```text
+help
 look
 north
 knock door
+search
+smell tea
+read portraits
+ask grandma about tea
+show key to grandma
+move portraits
 take brass key
 inventory
+drop spoon
 unlock attic
+use stone on axe
 drink tea
 quit
 ```
@@ -44,4 +53,4 @@ d
 
 ## Current status
 
-This is an early playable prototype. The core loop works, including movement, examining scenery, taking items, unlocking the attic, inventory, and the trance state.
+This is an early playable prototype. The core loop works, including movement, examining scenery, taking and dropping items, room searching, listening, talking, unlocking the attic, inventory, item use, and the trance state.
