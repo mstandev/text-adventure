@@ -20,12 +20,16 @@ class AdvancedParser:
             "show": ["show"],
             "read": ["read"],
             "smell": ["smell", "sniff"],
+            "exit": ["exit"],
             "open": ["open"],
+            "enter": ["enter"],
             "close": ["close", "shut"],
             "move": ["move", "push", "pull", "drag", "lift"],
             "pour": ["pour", "spill"],
             "light": ["light", "ignite", "burn"],
-            "attack": ["attack", "kill", "hit", "strike", "swing", "slash", "murder", "stab", "chop"],
+            "sharpen": ["sharpen", "hone", "whet"],
+            "attack": ["attack", "kill", "hit", "strike", "swing", "slash", "murder", "stab", "chop", "break", "smash", "damage", "crack"],
+            "restart": ["restart", "reset", "startover"],
             "help": ["help", "commands", "?"]
         }
         self.direction_map = {
