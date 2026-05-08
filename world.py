@@ -126,7 +126,7 @@ def setup_amon_house():
         "The Upstairs Hallway",
         "Oil paintings of the Amon ancestors line the upstairs hallway, their eyes following every move. The staircase descends to the foyer, and a doorway west opens into your childhood bedroom. At the far end, a narrow stair climbs to a small attic landing where a heavy door waits beneath the roofline. From above comes the slow creak of a rocking chair, steady as a pulse.",
         "The ancestors are no longer in their frames. Down, the foyer churns with shadow; west, your bedroom breathes behind its door; up the narrow stair, the attic landing waits like a held breath beneath the roof. Empty canvases gape along the hallway while voices try your name from inside the walls.",
-        {"down": "Foyer", "west": "King's Bedroom", "up": "Attic Landing"},
+        {"down": "Foyer", "west": "Your Bedroom", "up": "Attic Landing"},
         scenery={
             "stair": "The narrow stair rises at the far end of the hallway to a small landing beneath the attic door.",
             "stairs": "The narrow stair rises at the far end of the hallway to a small landing beneath the attic door.",
@@ -158,8 +158,8 @@ def setup_amon_house():
         }
     )
 
-    rooms["King's Bedroom"] = Room(
-        "King's Bedroom",
+    rooms["Your Bedroom"] = Room(
+        "Your Bedroom",
         "Your childhood bedroom lies west of the upstairs hall, though nothing about it feels like refuge. The hallway waits east through the half-open door. The bed is unmade, the air is stale, and a single candle gutters on the nightstand, casting weak light over old toys, a warped wardrobe, and the dust beneath the bed.",
         "The walls are breathing. East, the hallway calls through the door in borrowed voices, while the window looks out onto a world replaced by swirling purple mist. The toys on the floor have turned their faces away from you. Somewhere in this room, childhood has hidden what adulthood forgot.",
         {"east": "Upstairs Hallway"},

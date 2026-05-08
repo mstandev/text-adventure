@@ -91,15 +91,65 @@ def living_room_text(gs, room):
         return "Mother still lies on the sofa, with the foyer east and the study north. Her shadow has sunk back into the shape of her body. Around the floorboards, the dark cup-stains remain, half-seen and impossible to forget, and her unwrapped hand rests pale against the velvet."
     return "Mother lies on a velvet sofa, her face a mask of waxen exhaustion. The foyer waits east through a dark archway, and a narrow doorway north leads into a study crowded with books and papers. Her unwrapped hand rests limp against the sofa, marked by a dark red stain where the bandage used to be."
 
+def attic_room_text(gs, room):
+    if "teapot" in room.items:
+        return room.trance_desc if gs.trance else room.desc
+    if gs.teapot_smothered:
+        if in_full_trance(gs):
+            return "The attic is narrow and close beneath the roof beams. South, the open door back to the landing waits behind you. Grandma remains in the rocking chair while the guests gather around the small table, where bruised ribbons of steam hang low over an empty place."
+        if in_weakened_trance(gs):
+            return "Grandma remains in the rocking chair, with the open door south to the landing behind you. The small table stands bare except for a dark ring in the dust, and the room feels haunted now more than welcoming."
+        return "Grandma remains in the rocking chair, with the open door south to the landing behind you. The small table stands bare except for a dark ring in the dust, and bruised ribbons of steam cling low to the air."
+    if in_full_trance(gs):
+        return "The attic is crowded with flickering, translucent figures, each one hollow where a face should be. South through the open door lies the landing and the hallway beyond. The small table beside Grandma is bare now, but every faceless guest turns toward the teapot in your hands."
+    if in_weakened_trance(gs):
+        return "Grandma remains in the rocking chair, with the open door south to the landing behind you. The small table stands bare except for a silver ring in the dust, and the teapot in your hands feels heavier than metal should."
+    return "The attic is narrow and close beneath the roof beams. South, the open door back to the landing waits behind you. Grandma sits in her rocking chair with her back to you. Beside her, the small table stands bare except for a clean silver ring in the dust."
+
+def study_room_text(gs, room):
+    has_ledger = "ritual ledger" in room.items
+    has_card = "invitation card" in room.items
+
+    if has_ledger and has_card:
+        if in_weakened_trance(gs):
+            return "The study has stopped whispering in chorus. South, Mother's room waits beyond the doorway. The pages shift only when you look away now, and the records feel less enchanted than embarrassed to have been caught."
+        return room.trance_desc if gs.trance else room.desc
+
+    if has_ledger:
+        return state_text(
+            gs,
+            "Tall bookcases crowd the walls, bowing beneath hymnals and family records. South, the doorway returns to Mother's room. The crooked desk drawer hangs open, with the ritual ledger still waiting among loose papers scattered across the rug.",
+            "The books whisper in overlapping voices. South, Mother's room waits like a held sob. The drawer hangs open, and the ritual ledger keeps dragging the loose papers around itself whenever you blink.",
+            "The study has stopped whispering in chorus. South, Mother's room waits beyond the doorway. The ritual ledger remains among papers that now seem embarrassed by their own importance."
+        )
+
+    if has_card:
+        return state_text(
+            gs,
+            "Tall bookcases crowd the walls, bowing beneath hymnals and family records. South, the doorway returns to Mother's room. The crooked desk drawer hangs open, with the invitation card still waiting among loose papers scattered across the rug.",
+            "The books whisper in overlapping voices. South, Mother's room waits like a held sob. The drawer hangs open, and the invitation card keeps catching the room's attention like a white tooth in the dark.",
+            "The study has stopped whispering in chorus. South, Mother's room waits beyond the doorway. The invitation card remains among papers that no longer quite manage to hide it."
+        )
+
+    return state_text(
+        gs,
+        "Tall bookcases crowd the walls, bowing beneath hymnals and family records. South, the doorway returns to Mother's room. The crooked desk drawer hangs open and empty, while loose papers lie across the rug like pale leaves after a storm.",
+        "The books whisper in overlapping voices. South, Mother's room waits like a held sob. The desk drawer chatters emptily against its frame, and the loose papers rearrange themselves around absences they resent.",
+        "The study has stopped whispering in chorus. South, Mother's room waits beyond the doorway. The drawer hangs open and empty, and the remaining papers look less enchanted than caught."
+    )
+
 def room_text(gs, room):
     if gs.current_room == "Living Room":
         return living_room_text(gs, room)
+    if gs.current_room == "Attic":
+        return attic_room_text(gs, room)
+    if gs.current_room == "Study":
+        return study_room_text(gs, room)
     if in_weakened_trance(gs):
         texts = {
             "Front Gate": "The gates still seem too much like hands, but the sky above them has settled back into an ordinary, wounded night. North, the house no longer pulls at you so cleanly; south, the cemetery lies still in the fog. The estate only watches.",
             "Foyer": "The chandelier sways though there is no wind. South is the front door, north the kitchen, west the living room, east the dining room, and up the staircase the house still holds its breath. The shadows no longer dance free of the walls, yet they lag a little behind the light.",
             "Living Room": "Mother still lies on the sofa, with the foyer east and the study north. Her shadow has sunk back into the shape of her body. Around the floorboards, the dark cup-stains remain, half-seen and impossible to forget.",
-            "Study": "The study has stopped whispering in chorus. South, Mother's room waits beyond the doorway. The pages shift only when you look away now, and the records feel less enchanted than embarrassed to have been caught.",
             "Kitchen": "The blue flame has thinned to an unsteady thread. South leads to the foyer, east to the garden, and down to the cellar. The kitchen is a kitchen again, mostly, but the hearth still seems to be holding its breath.",
             "Upstairs Hallway": "The portraits are back in their frames, though none look entirely painted anymore. Down lies the foyer, west your bedroom, and up the narrow stair the attic landing keeps its own counsel. The house holds your name quietly now.",
             "Attic Landing": "The landing has stopped leaning quite so hard around you. Down the narrow stair lies the hallway; north, the attic door remains the house's most stubborn mouth.",
@@ -455,6 +505,8 @@ def handle_room_entry(gs, room):
         print("\nThe rocking slows before stopping altogether.")
         print("Grandma does not turn, yet the room knows you have arrived. Somewhere in the air, porcelain touches porcelain with a careful, expectant chime.")
         print("'You came properly this time,' Grandma says. 'Good. Sit with the quiet a moment, and let it learn your breathing.'")
+        print("A cup you cannot quite see settles into the air before you, warm enough to fog the space where your fingers would close around it.")
+        print("'Drink,' Grandma says. 'Only a sip. Then you will hear the house properly.'")
         gs.attic_seen = True
         gs.tea_invited = True
     elif gs.current_room == "Attic" and gs.ritual_branch == "obedience" and not gs.branch_scene_seen:
@@ -612,12 +664,12 @@ def play():
                     print("The blue flame has thinned to a nervous thread. It still avoids the pale ash below it.")
                 else:
                     print("The flame is blue and thin, bending without wind. It makes the kitchen shadows look sharpened rather than warmed.")
-            elif gs.current_room == "King's Bedroom" and obj in ("key", "brass key", "brass"):
+            elif gs.current_room == "Your Bedroom" and obj in ("key", "brass key", "brass"):
                 if "brass key" in room.items or "brass key" in gs.inventory:
                     print("The brass key is small, old, and colder than the room around it. Its teeth are cut in a strange uneven pattern, like a tiny skyline of broken houses.")
                 else:
                     print("You do not see a key here.")
-            elif gs.current_room == "King's Bedroom" and obj in ("all", "everything", "items", "room"):
+            elif gs.current_room == "Your Bedroom" and obj in ("all", "everything", "items", "room"):
                 print("You take in the room piece by piece: the unmade bed, the guttering candle, the nightstand, the old toys, the warped wardrobe, the cold window, and the dust disturbed beneath the bed.")
                 if "brass key" in room.items:
                     print("The brass key catches the candlelight as the only thing here that seems ready to leave.")
@@ -676,6 +728,11 @@ def play():
                     print("Grandma looks older now that the room is no longer flattering her. Not harmless, not defeated, but more mortal than she would like to be seen.")
                 else:
                     print("Grandma remains turned from you, but her posture is not frail. One hand rests on the chair arm, still as a spider waiting at the center of its web.")
+            elif obj == "table" and gs.current_room == "Attic":
+                if "teapot" in room.items:
+                    print("A small table stands beside Grandma, set with the silver teapot and the expectation of company.")
+                else:
+                    print("The small table beside Grandma is bare now except for a clean silver ring in the dust where the teapot used to rest.")
             elif obj in ("teapot", "tea", "amon") and gs.current_room == "Attic":
                 if in_full_trance(gs):
                     print("The teapot glows from within like a sealed heart. Each breath of steam carries murmurs, laughter, and the weight of a promise you half remember making.")
@@ -806,7 +863,12 @@ def play():
                         gs.discovered_witness = True
                     print(trance_text)
                 elif gs.current_room == "Study":
-                    print("You sort through the study and find: ritual ledger, invitation card. The papers keep circling invitation, inheritance, and a third idea hidden beneath angry cross-outs.")
+                    found_items = [item for item in ("ritual ledger", "invitation card") if item in room.items]
+                    if found_items:
+                        print(f"You sort through the study and find: {', '.join(found_items)}.")
+                        print("The surrounding papers keep circling inheritance, return, and a third idea hidden beneath angry cross-outs.")
+                    else:
+                        print("You sort through the study again. The drawer is empty now, and the remaining papers offer only fragments of household accounts, treatment notes, and names crossed out too hard.")
                 elif gs.current_room == "Dining Room":
                     if "family photograph" in room.items:
                         print("You search the table and sideboard. A family photograph has been left face-down, as if someone could not bear being watched while eating.")
@@ -1046,7 +1108,12 @@ def play():
             elif obj in ("sealed jar", "jar") and gs.current_room == "Cellar":
                 print("You think better of opening that here.")
             elif obj in ("desk", "drawer") and gs.current_room == "Study":
-                print("The drawer gives with a dry snap. Inside are a ritual ledger and an invitation card, already disturbed as if someone expected you.")
+                found_items = [item for item in ("ritual ledger", "invitation card") if item in room.items]
+                if found_items:
+                    print(f"The drawer gives with a dry snap. Inside: {', '.join(found_items)}.")
+                    print("The papers around them are already disturbed, as if someone expected you.")
+                else:
+                    print("The drawer gives with a dry snap, but it is empty now. Only dust and a few curled paper scraps remain inside.")
             else:
                 print(state_text(
                     gs,
@@ -1140,7 +1207,8 @@ def play():
                 ))
 
         elif v == "knock":
-            if gs.current_room == "Front Door" and (obj in (None, "knocker", "gargoyle", "door", "front door")):
+            knock_target = obj or i_obj
+            if gs.current_room == "Front Door" and (knock_target in (None, "knocker", "gargoyle", "door", "front door")):
                 if not gs.door_unlocked:
                     print("\n*CLANG... CLANG... CLANG*")
                     print("Grandma: 'I knew it was You at the door!'")
@@ -1153,7 +1221,7 @@ def play():
                     room.scenery["door"] = "The door is now unlocked and slightly ajar."
                 else:
                     print("The door is already open.")
-            elif gs.current_room == "Attic Landing" and obj in (None, "door", "attic", "attic door") and gs.attic_primed:
+            elif gs.current_room == "Attic Landing" and knock_target in (None, "door", "attic", "attic door") and gs.attic_primed:
                 print("\nYou knock once. The sound is swallowed immediately.")
                 print("From beyond the door, something whispers your name with the tenderness of recognition and the chill of ownership.")
                 print("The attic lock slides back of its own accord.")
@@ -1163,7 +1231,7 @@ def play():
                 room.desc = "The attic landing waits under the sloped roof. Down the narrow stair lies the upstairs hallway; north, the attic door now stands open as if it has recognized you."
                 room.scenery["door"] = "The heavy door stands open. Something upstairs has accepted your arrival."
                 room.scenery["attic door"] = room.scenery["door"]
-            elif gs.current_room == "Upstairs Hallway" and obj in ("door", "attic", "attic door"):
+            elif gs.current_room == "Upstairs Hallway" and knock_target in ("door", "attic", "attic door"):
                 print("Your knock would not reach from here. The attic door waits up the narrow stair, on the landing.")
             else:
                 print(state_text(
@@ -1179,9 +1247,6 @@ def play():
                 if item_id == "brass key":
                     if gs.attic_unlocked:
                         print("It's already unlocked.")
-                    elif not gs.read_invitation:
-                        print("The brass key slips into place as if it remembers your hand, yet the lock refuses to turn.")
-                        print("For a moment the metal grows warm against your fingers, and you feel the door withholding itself, not from force, but from ignorance.")
                     elif not gs.moved_portraits:
                         print("The key yields a little, then binds as though another hand has taken hold of it from within.")
                         print("Somewhere along the hallway wall, wood taps once against plaster. The watching faces seem to know why you are being refused.")
@@ -1189,7 +1254,7 @@ def play():
                         print("\nThe key turns with a grudging click, then stops at a second catch.")
                         print("A breath escapes the seam of the door, carrying a whisper soft as dust across a coffin lid: 'Knock, and be named.'")
                         gs.attic_primed = True
-                        room.scenery["door"] = "The lock has given way once, but the room beyond still insists on invitation, as if a key can open the metal but not the will behind it."
+                        room.scenery["door"] = "The lock has given way once, but the room beyond still insists on being asked, as if a key can open the metal but not the will behind it."
                         room.scenery["attic door"] = room.scenery["door"]
                     else:
                         print("The key has done all it can. What remains is older than locksmithing: the room is waiting to hear you ask entry in the language it prefers.")
