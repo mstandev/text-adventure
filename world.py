@@ -35,13 +35,18 @@ def setup_amon_house():
 
     rooms["Front Door"] = Room(
         "The Front Door",
-        "A heavy oak door stands north before you, barred from the inside. The path back to the gate lies south, but the house fills your attention like a held breath. At eye level, a brass knocker in the shape of a gargoyle leers from the center panel, its open mouth polished by long use and bad weather.",
-        "The door pulses like a beating heart, and the wood seems less built than grown around whatever waits inside. South, the path to the gate thins into shadow. North, the door waits with the patience of something that knows the difference between force and invitation, while the gargoyle's eyes flicker red.",
+        "A heavy oak door stands north before you, barred from the inside. The path back to the gate lies south, but the house fills your attention like a held breath. At eye level, a brass knocker in the shape of a gargoyle leers from the center panel, its open mouth polished by long use and bad weather. Fastened just beneath the knocker is a narrow nameplate engraved with one word: AMON.",
+        "The door pulses like a beating heart, and the wood seems less built than grown around whatever waits inside. South, the path to the gate thins into shadow. North, the door waits with the patience of something that knows the difference between force and invitation, while the gargoyle's eyes flicker red and the AMON nameplate gleams like a sealed command.",
         {"south": "Front Gate"}, # North is locked!
         scenery={
-            "knocker": "The gargoyle knocker is heavy brass, mounted exactly where a visitor's hand would fall. Its open mouth looks made for a hard, ringing knock.",
-            "gargoyle": "The brass gargoyle is not just decoration. Its lower jaw hangs as a knocker, polished bright where other hands have lifted it.",
-            "door": "The oak is ancient and scarred. It is currently locked tight, but the brass gargoyle knocker sits ready at the center panel."
+            "knocker": "The gargoyle knocker is heavy brass, mounted exactly where a visitor's hand would fall. Its open mouth looks made for a hard, ringing knock, and a narrow nameplate marked AMON is fixed beneath its jaw.",
+            "gargoyle": "The brass gargoyle is not just decoration. Its lower jaw hangs as a knocker, polished bright where other hands have lifted it. Beneath the jaw, a small nameplate gives the house its name: AMON.",
+            "door": "The oak is ancient and scarred. It is currently locked tight, but the brass gargoyle knocker sits ready at the center panel above a narrow AMON nameplate.",
+            "nameplate": "The narrow brass nameplate is fixed directly beneath the gargoyle knocker. The engraved letters are worn bright from weather and touch: AMON.",
+            "plate": "The narrow brass nameplate is fixed directly beneath the gargoyle knocker. The engraved letters are worn bright from weather and touch: AMON.",
+            "brass nameplate": "The narrow brass nameplate is fixed directly beneath the gargoyle knocker. The engraved letters are worn bright from weather and touch: AMON.",
+            "amon nameplate": "The narrow brass nameplate is fixed directly beneath the gargoyle knocker. The engraved letters are worn bright from weather and touch: AMON.",
+            "amon": "The name AMON is engraved on the brass plate beneath the gargoyle knocker, as if the house itself expects to be addressed before it opens."
         }
     )
 

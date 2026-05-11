@@ -6,7 +6,7 @@ class AdvancedParser:
             "go": ["walk", "run", "north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"],
             "take": ["get", "grab", "pick", "collect", "take"],
             "drop": ["drop", "leave", "discard"],
-            "examine": ["look", "check", "inspect", "examine", "peek"],
+            "examine": ["look", "check", "inspect", "examine", "peek", "x"],
             "use": ["apply", "put", "place", "give", "cast", "scatter", "use"],
             "inventory": ["i", "items", "bag", "inventory"],
             "unlock": ["unlock"],
@@ -54,6 +54,9 @@ class AdvancedParser:
                 obj = " ".join(tokens[1:i])
                 i_obj = " ".join(tokens[i+1:])
                 break
+        if prep and not obj and i_obj:
+            obj = i_obj
+            i_obj = None
         if not prep and len(tokens) > 1:
             obj = " ".join(tokens[1:])
         if verb == "go" and obj in self.direction_map:

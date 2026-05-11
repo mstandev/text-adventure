@@ -304,6 +304,8 @@ def item_available(gs, room, item_id):
     return item_id in room.items or item_id in gs.inventory
 
 def visible_item_for_read(gs, room, obj):
+    if obj in ("nameplate", "plate", "brass nameplate", "amon nameplate", "amon"):
+        return gs.current_room == "Front Door"
     if obj in ("ledger", "ritual ledger"):
         return item_available(gs, room, "ritual ledger")
     if obj in ("card", "invitation", "invitation card"):
@@ -351,6 +353,10 @@ FIXED_TAKE_RESPONSES = {
     "front door": "The front door is part of the house. It can be opened, entered, or knocked upon, but not taken.",
     "knocker": "The brass knocker is fixed into the door. It is meant to be lifted and struck, not pocketed.",
     "gargoyle": "The gargoyle is bolted into the door, watching you with the patience of old brass.",
+    "nameplate": "The nameplate is screwed tight beneath the knocker. It belongs to the door and to the house's idea of itself.",
+    "plate": "The nameplate is screwed tight beneath the knocker. It belongs to the door and to the house's idea of itself.",
+    "brass nameplate": "The nameplate is screwed tight beneath the knocker. It belongs to the door and to the house's idea of itself.",
+    "amon nameplate": "The nameplate is screwed tight beneath the knocker. It belongs to the door and to the house's idea of itself.",
     "mother": "Mother is not an object to carry. Her shallow breathing makes the thought feel cruel before it is even complete.",
     "mom": "Mother is not an object to carry. Her shallow breathing makes the thought feel cruel before it is even complete.",
     "sofa": "The sofa is too heavy, and Mother lies upon it like the last fragile thing keeping the room human.",
@@ -744,9 +750,9 @@ def play():
                 print("For an instant you see nothing. Then the air dimples. Handles, rims, and pale reflections appear and vanish as invisible hands test their place settings.")
             elif gs.current_room == "Front Door" and obj in ("door", "front door"):
                 if gs.door_unlocked:
-                    print("The heavy oak door stands open now, with the dark foyer waiting north.")
+                    print("The heavy oak door stands open now, with the dark foyer waiting north. The AMON nameplate beneath the knocker catches a dull glint.")
                 else:
-                    print("The oak door is barred from the inside. The only part that looks handled is the brass gargoyle knocker set into the center panel.")
+                    print("The oak door is barred from the inside. The only parts that look handled are the brass gargoyle knocker and the narrow AMON nameplate beneath it.")
             elif obj in room.scenery:
                 print(room.scenery[obj])
             else:
@@ -778,6 +784,9 @@ def play():
                 gs.read_invitation = True
                 print("In a fine, formal hand it reads: 'Welcome home. Knock and enter.'")
                 print("Someone has pressed too hard on the words below it, leaving only a half-legible flourish where more text may once have been.")
+            elif obj in ("nameplate", "plate", "brass nameplate", "amon nameplate", "amon") and gs.current_room == "Front Door":
+                print("The nameplate reads: AMON.")
+                print("The letters are simple and formal, but the way they sit beneath the knocker makes the word feel less like a name than a demand for recognition.")
             elif obj in ("photo", "photograph", "family photograph"):
                 print("The photograph shows Mother, Missy, and you as children. Grandma stands behind you all with one hand on the back of the head chair, smiling as if she owns the light itself.")
             elif gs.current_room == "Dining Room" and obj in DINING_INITIAL_TARGETS:
@@ -837,9 +846,9 @@ def play():
                 print("It does not glow like the rest of the hearth. Instead it seems to drink the blue light out of the flame above it, turning warmth into hush.")
             elif gs.current_room == "Front Door":
                 if gs.door_unlocked:
-                    print("The door is open now. The gargoyle knocker hangs still, its duty satisfied.")
+                    print("The door is open now. The gargoyle knocker hangs still above the AMON nameplate, its duty satisfied.")
                 else:
-                    print("You search the door and find no handle, latch, or keyhole on this side. Only the brass gargoyle knocker has been touched often enough to shine.")
+                    print("You search the door and find no handle, latch, or keyhole on this side. Only the brass gargoyle knocker and the AMON nameplate beneath it have been touched often enough to shine.")
             elif gs.current_room == "Dining Room" and obj in DINING_FLOOR_TARGETS + DINING_INITIAL_TARGETS:
                 if "initials" in room.scenery:
                     print("With the head chair pulled aside, the marks are plain: A.A., E.A., M.A., and H.A. cut into the boards in a tight ring where the chair had hidden them.")
@@ -1217,7 +1226,7 @@ def play():
                     # UPDATE THE ROOM DYNAMICALLY
                     gs.door_unlocked = True
                     room.exits["north"] = "Foyer"
-                    room.desc = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied."
+                    room.desc = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied above the narrow AMON nameplate."
                     room.scenery["door"] = "The door is now unlocked and slightly ajar."
                 else:
                     print("The door is already open.")
@@ -1344,7 +1353,7 @@ def play():
                     print("You hear the heavy bolt slide back. The door is now open.")
                     gs.door_unlocked = True
                     room.exits["north"] = "Foyer"
-                    room.desc = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied."
+                    room.desc = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied above the narrow AMON nameplate."
                     room.scenery["door"] = "The door is now unlocked and slightly ajar."
                 else:
                     print("The door is already open.")
