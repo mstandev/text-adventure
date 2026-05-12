@@ -647,6 +647,7 @@ def play():
                     else:
                         reveal_portrait_carving(gs, room)
                         print("You look behind the paintings. One portrait shifts aside, revealing a hidden carving in the plaster behind it.")
+                        print("The carving reads: 'Let invited blood knock, and the listening room shall answer.'")
                 else:
                     print("There are no paintings here to look behind.")
             elif obj in ("ash", "hearth ash", "cinders"):
@@ -772,7 +773,7 @@ def play():
                 if obj in ("ledger", "ritual ledger", "labels", "jar", "jars", "sealed jar"):
                     gs.discovered_witness = True
                 print(trance_text)
-            elif obj in ("portraits", "paintings", "oil paintings", "ancestor paintings", "ancestors") and gs.current_room == "Upstairs Hallway":
+            elif obj in ("portrait", "portraits", "painting", "paintings", "oil painting", "oil paintings", "ancestor painting", "ancestor paintings", "ancestors") and gs.current_room == "Upstairs Hallway":
                 if gs.moved_portraits:
                     print("Behind the shifted frame, a hidden line is carved into the wall: 'Let invited blood knock, and the listening room shall answer.'")
                 else:
@@ -863,6 +864,7 @@ def play():
                     else:
                         reveal_portrait_carving(gs, room)
                         print("You search behind the paintings. One portrait shifts aside, revealing a hidden carving in the plaster behind it.")
+                        print("The carving reads: 'Let invited blood knock, and the listening room shall answer.'")
                 else:
                     print("There are no paintings here to search behind.")
             else:
@@ -984,6 +986,17 @@ def play():
                         print("Grandma glances at the dim air around the cups. 'They have stepped back, not gone,' she says. 'A rude house still remembers its guests.'")
                     else:
                         print("Grandma smiles without warmth. 'They are older than family, older than prayer, and far kinder than doctors.'")
+                elif i_obj in ("ancestor", "ancestors", "family", "portraits", "paintings", "oil paintings", "ancestor paintings"):
+                    if gs.ritual_branch == "ash":
+                        print("Grandma looks toward the door, as if she can see through the house to the hallway of portraits. 'The ancestors are quiet now because you have made them uncertain,' she says. 'Do not mistake quiet for absence.'")
+                    elif gs.ritual_branch == "obedience":
+                        print("Grandma's smile deepens. 'They kept the door for you,' she says. 'Every painted face upstairs is a cup that learned to hold a little memory and a little hunger.'")
+                    elif in_full_trance(gs):
+                        print("Grandma smiles as if naming honored guests. 'The ancestors are not dead in the way doctors mean dead,' she says. 'They are memory, witness, and appetite, painted thin enough for children to call them portraits.'")
+                    elif in_weakened_trance(gs):
+                        print("Grandma glances toward the dim hall beyond the attic door. 'They have stepped back into their frames,' she says. 'That is manners, not surrender.'")
+                    else:
+                        print("Grandma gives a soft, scolding laugh. 'Family is only another word for those who were invited before you,' she says. 'The paintings remember how to listen.'")
                 elif i_obj in ("house", "amon"):
                     if gs.ritual_branch == "ash":
                         print("'You have wounded Amon, not ended it,' Grandma says. 'A house can bleed through more than steam.'")
@@ -1188,12 +1201,13 @@ def play():
         elif v == "move":
             if obj == "rocking chair" and gs.current_room == "Attic":
                 print("Before your hands can truly settle on the wood, the chair gives a warning creak and rocks back by itself, as though your touch requires permission.")
-            elif obj in ("portraits", "paintings", "oil paintings", "ancestor paintings", "ancestors") and gs.current_room == "Upstairs Hallway":
+            elif obj in ("portrait", "portraits", "painting", "paintings", "oil painting", "oil paintings", "ancestor painting", "ancestor paintings", "ancestors") and gs.current_room == "Upstairs Hallway":
                 if gs.moved_portraits:
                     print("One portrait is already shifted aside, leaving the hidden carving visible behind it.")
                 else:
                     reveal_portrait_carving(gs, room)
                     print("One portrait shifts aside, revealing a hidden carving in the plaster behind it.")
+                    print("The carving reads: 'Let invited blood knock, and the listening room shall answer.'")
             elif obj in ("chair", "head chair") and gs.current_room == "Dining Room":
                 room.scenery["floor"] = "The floorboards beneath the head chair are scraped nearly white. The scratches gather around a deliberate carving rather than random damage."
                 room.scenery["floorboards"] = room.scenery["floor"]
