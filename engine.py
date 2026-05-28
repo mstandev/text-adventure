@@ -96,6 +96,7 @@ class GameState:
         self.branch_scene_seen = False
         self.discovered_witness = False
         self.missy_heard = False
+        self.missy_voice_rooms = set()
         self.dead_characters = set()
         self.game_over = False
 

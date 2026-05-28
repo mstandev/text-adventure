@@ -111,6 +111,10 @@ def setup_amon_house():
             "fireplace": "The stone hearth holds a cold blue flame that gives off light without comfort. Pale ash lies beneath it, ordinary at first glance, as if the fire has not decided whether to reveal what it has spared.",
             "flame": "The flame is blue and thin, bending without wind. It makes the kitchen shadows look sharpened rather than warmed.",
             "blue flame": "The blue flame is thin and cold, bending without wind. It makes the kitchen shadows look sharpened rather than warmed.",
+            "fire": "The fire is a cold blue flame, thin and watchful, giving the room shape without giving it comfort.",
+            "blue fire": "The blue fire bends without wind. It looks less like heat than a warning that learned to burn.",
+            "hearth fire": "The hearth fire is blue and cold, hovering over pale ash that looks untouched by ordinary burning.",
+            "cold fire": "The cold fire gives off light without warmth, turning the kitchen shadows long and sharp.",
             "worktable": "The scarred worktable has been scrubbed hard, but old cuts remain in the wood like half-erased instructions.",
             "workbench": "The scarred worktable has been scrubbed hard, but old cuts remain in the wood like half-erased instructions.",
             "work bench": "The scarred worktable has been scrubbed hard, but old cuts remain in the wood like half-erased instructions.",
@@ -191,8 +195,8 @@ def setup_amon_house():
 
     rooms["Attic"] = Room(
         "The Attic (Grandma's Room)",
-        "The attic is narrow and close beneath the roof beams. South, the open door back to the landing waits behind you. Grandma sits in her rocking chair with her back to you, placed as if she has always belonged at the room's center. Beside her, a small table holds the silver teapot called Amon, and violet steam coils from its spout.",
-        "The attic is crowded with flickering, translucent figures, each one hollow where a face should be. South through the open door lies the landing and the hallway beyond, though the guests seem to prefer you not notice it. They press around the rocking chair, around the table, around the violet steam rising from Amon's spout, gathering the room's attention around Grandma and you.",
+        "The attic is narrow and close beneath the roof beams. South, the open door back to the landing waits behind you. Grandma sits in her rocking chair with her back to you, placed as if she has always belonged at the room's center. Beside her, a small table holds a silver teapot, and violet steam coils from its spout.",
+        "The attic is crowded with flickering, translucent figures, each one hollow where a face should be. South through the open door lies the landing and the hallway beyond, though the guests seem to prefer you not notice it. They press around the rocking chair, around the table, around the violet steam rising from the teapot's spout, gathering the room's attention around Grandma and you.",
         {"south": "Attic Landing", "down": "Attic Landing"},
         items={"teapot": ["amon", "pot", "tea"]},
         scenery={

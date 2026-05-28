@@ -72,6 +72,19 @@ def describe_inventory(gs):
         else:
             print(f"Inventory: {items}")
 
+def print_room(gs, include_entry=True):
+    room = gs.rooms[gs.current_room]
+    print(f"\n--- {room.name} ---")
+    print(room_text(gs, room))
+    if include_entry:
+        handle_room_entry(gs, room)
+    if room.items:
+        if isinstance(room.items, dict):
+            item_names = ", ".join(room.items.keys())
+        else:
+            item_names = ", ".join(room.items)
+        print(f"Items here: {item_names}")
+
 def print_help():
     print("Commands: go, look, examine, read, smell, take, drop, inventory, search, listen, talk, ask, show, open, close, move, knock, unlock, use, sharpen, pour, light, drink, attack, exit, restart, quit")
     print("Examples: north, examine door, take item, read note, ask person about topic, use item on target, sharpen axe, attack target with item")
@@ -506,6 +519,44 @@ def trance_read_text(gs, obj):
         return "The names on the headstones ripple. Some family dates end, then begin again a few inches lower in the stone."
     return None
 
+def missy_voice_event(gs):
+    if gs.current_room == "Front Door" and not gs.door_unlocked:
+        return "front_door", "'Don't push,' Missy's voice says inside your mind, small and urgent. 'It likes manners better than strength.'"
+    if gs.current_room == "Foyer":
+        return "foyer", "'It hears better in the hall,' Missy whispers inside your thoughts. 'Don't say yes just because the house leaves room for you to answer.'"
+    if gs.current_room == "Dining Room":
+        return "dining_room", "'Don't sit where she sits,' Missy's voice says, though no one stands beside you. 'That chair remembers who obeyed.'"
+    if gs.current_room == "Living Room" and not gs.bandage_taken:
+        return "living_room_bandage", "'Mother can hear more than she can say,' Missy whispers in your mind. 'Don't let the white cloth fool you. It remembers.'"
+    if gs.current_room == "Study":
+        return "study", "'The papers are scared of being read,' Missy says somewhere behind your eyes. 'That means they know something useful.'"
+    if gs.current_room == "Your Bedroom":
+        return "your_bedroom", "'You used to hide from her in here,' Missy's voice says. 'The room still knows the shape of hiding.'"
+    if gs.current_room == "Upstairs Hallway":
+        return "upstairs_hallway", "'The paintings listen for her,' Missy whispers. 'Make one look away.'"
+    if gs.current_room == "Attic Landing" and not gs.attic_unlocked:
+        return "attic_landing_locked", "'Keys are not enough,' Missy's thought brushes yours. 'Grandma taught the door to expect a voice.'"
+    if gs.current_room == "Kitchen" and in_full_trance(gs) and not gs.ash_revealed:
+        return "kitchen_trance_ash", "'The fire is lying,' Missy whispers in your mind. 'Look where it refuses to burn.'"
+    if gs.current_room == "Cellar" and "bloodied bandage" in gs.inventory and not gs.witness_awakened:
+        return "cellar_bandage", "'Don't break the jar,' Missy's voice says, faint as breath against glass. 'Wake it.'"
+    if gs.current_room == "Attic" and not gs.trance and not gs.teapot_smothered:
+        return "attic_tea_warning", "'That's not tea,' Missy says inside your skull, so close it hurts. 'It's a door pretending to be warm. THEM are waiting on the other side of the cup.'"
+    if gs.current_room == "Attic" and gs.ritual_branch == "ash":
+        return "attic_ash_branch", "'You made them hear themselves,' Missy's voice says. 'Now don't give them your fear to drink.'"
+    return None
+
+def handle_missy_voice(gs):
+    event = missy_voice_event(gs)
+    if not event:
+        return
+    key, text = event
+    if key in gs.missy_voice_rooms:
+        return
+    gs.missy_voice_rooms.add(key)
+    gs.missy_heard = True
+    print(f"\n{text}")
+
 def handle_room_entry(gs, room):
     if gs.current_room == "Attic" and not gs.attic_seen:
         print("\nThe rocking slows before stopping altogether.")
@@ -525,6 +576,7 @@ def handle_room_entry(gs, room):
         print("The steam hangs low and wounded. Around the room, unseen guests shift with the restless sound of chairs scraping back from a spoiled feast.")
         print("Grandma grips the chair arms until the wood complains. 'If you stay,' she says, 'you stay without blessing.'")
         gs.branch_scene_seen = True
+    handle_missy_voice(gs)
 
 def new_game():
     rooms = setup_amon_house()
@@ -538,19 +590,13 @@ def play():
     print("----------------------------")
     print("Grandma is back. The tea is brewing. Don't listen to the voices.")
 
+    suppress_room_display = False
     while True:
         room = gs.rooms[gs.current_room]
-        print(f"\n--- {room.name} ---")
-        print(room_text(gs, room))
-        handle_room_entry(gs, room)
-        
-        # Display items using the new dictionary format
-        if room.items:
-            if isinstance(room.items, dict):
-                item_names = ", ".join(room.items.keys())
-            else:
-                item_names = ", ".join(room.items)
-            print(f"Items here: {item_names}")
+        if suppress_room_display:
+            suppress_room_display = False
+        else:
+            print_room(gs)
 
         user_input = input("\n> ")
         v, obj, prep, i_obj = parser.parse(user_input)
@@ -582,8 +628,8 @@ def play():
             describe_inventory(gs)
 
         elif v == "look":
-            # Just continues the loop to re-print the description
-            continue
+            print_room(gs, include_entry=False)
+            suppress_room_display = True
 
         # 2. Movement Logic
         elif v == "go":
@@ -634,7 +680,8 @@ def play():
         # 3. Examination Logic
         elif v == "examine":
             if not obj:
-                print(room_text(gs, room))
+                print_room(gs, include_entry=False)
+                suppress_room_display = True
             elif obj == "keyhole" and gs.current_room == "Attic Landing":
                 print("\nYou peek through the keyhole. You see tea cups floating in mid-air!")
             elif obj in BEHIND_PAINTING_TARGETS:
@@ -664,7 +711,7 @@ def play():
                     print("The hearth has quieted, though the stone still remembers its shape of violence. Pale ash rests beneath the thinning blue flame, less hidden now than leftover.")
                 else:
                     print("The stone hearth holds a cold blue flame that gives off light without comfort. Pale ash lies beneath it, ordinary at first glance, waiting for some change in your sight.")
-            elif gs.current_room == "Kitchen" and obj in ("flame", "blue flame"):
+            elif gs.current_room == "Kitchen" and obj in ("flame", "blue flame", "fire", "blue fire", "hearth fire", "cold fire"):
                 if in_full_trance(gs):
                     print("The blue flame screams in a frequency you feel in your teeth. Beneath it, the ash stays pale and still, untouched by the fire's panic.")
                 elif in_weakened_trance(gs):
@@ -680,6 +727,12 @@ def play():
                 print("You take in the room piece by piece: the unmade bed, the guttering candle, the nightstand, the old toys, the warped wardrobe, the cold window, and the dust disturbed beneath the bed.")
                 if "brass key" in room.items:
                     print("The brass key catches the candlelight as the only thing here that seems ready to leave.")
+            elif obj in ("missy", "sister"):
+                if gs.missy_heard:
+                    print("You search for Missy with your eyes, but there is no figure to find.")
+                    print("Her voice lives closer than the room, tucked somewhere inside thought and memory.")
+                else:
+                    print("You do not see Missy here.")
             elif in_full_trance(gs) and gs.current_room == "Living Room" and obj in ("mother", "mom"):
                 if gs.bandage_taken:
                     print("Mother's body lies still, one hand unwrapped and exposed. Her shadow keeps trying to sit up before something taller presses it gently back down.")
@@ -728,6 +781,12 @@ def play():
                 print("Each jar contains more than liquid now. Faces drift up through the murk, touching the glass from inside whenever your gaze lingers too long.")
             elif in_weakened_trance(gs) and gs.current_room == "Cellar" and obj in ("jars", "sealed jar", "jar"):
                 print("The faces are harder to catch now. You see them only in the instant before deciding you imagined them.")
+            elif obj in ("photo", "photograph", "family photograph") and ("family photograph" in room.items or "family photograph" in gs.inventory):
+                trance_text = trance_read_text(gs, obj)
+                if trance_text:
+                    print(trance_text)
+                else:
+                    print("The photograph shows Mother, Missy, and you as children. Grandma stands behind you all with one hand on the back of the head chair, smiling as if she owns the light itself.")
             elif obj in ("grandma", "grandmother") and gs.current_room == "Attic":
                 if in_full_trance(gs):
                     print("Grandma's face seems both ancient and newly made, the skin stretched thin over a smile that belongs to someone being greeted from very far away.")
@@ -965,6 +1024,12 @@ def play():
                     print("Grandma studies you more carefully now. 'You hear less than before,' she says, 'but more than is good for any child to keep.'")
                 else:
                     print("Grandma does not turn around. 'You came all this way to stand there?' she asks softly. 'Sit, listen, and let the tea decide how much truth you can bear.'")
+            elif obj in ("missy", "sister"):
+                if gs.missy_heard:
+                    print("You answer Missy in thought, because there is no body in the room to face.")
+                    print("'I can hear you better when you stop looking for me,' her voice says, soft and frightened inside your mind.")
+                else:
+                    print("You call for Missy, but no voice answers yet.")
             else:
                 print(state_text(
                     gs,
@@ -1063,8 +1128,15 @@ def play():
                 else:
                     print("Mother is too weak to answer clearly.")
             elif obj in ("missy", "sister") and gs.current_room in ("Front Gate", "Foyer", "Upstairs Hallway"):
-                gs.missy_heard = True
-                print("No answer comes, but for a moment you would swear your sister is listening from somewhere nearby.")
+                if gs.missy_heard:
+                    print("You shape the question silently, the way you would touch a bruise to learn if it still hurts.")
+                    print("Missy's voice answers from inside thought rather than air: 'I can only stay where she forgets to look.'")
+                else:
+                    gs.missy_heard = True
+                    print("No answer comes aloud, but for a moment you would swear your sister is listening from somewhere inside your thoughts.")
+            elif obj in ("missy", "sister") and gs.missy_heard:
+                print("You shape the question silently, the way you would touch a bruise to learn if it still hurts.")
+                print("Missy's voice answers from inside thought rather than air: 'I can only stay where she forgets to look.'")
             else:
                 print(state_text(
                     gs,
