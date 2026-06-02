@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>House of Amon - PyScript</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2026.3.1/core.css" />
+    <link rel="stylesheet" href="./web.css" />
+    <script type="module" src="https://pyscript.net/releases/2026.3.1/core.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <p class="eyebrow">PyScript branch</p>
+        <h1>House of Amon</h1>
+        <p class="summary">
+          The Python terminal version, running in the browser. Type into the terminal below.
+        </p>
+      </header>
+
+      <section class="terminal-frame" aria-label="Playable game terminal">
+        <script type="py" src="./main.py" config="./pyscript.json" terminal worker></script>
+      </section>
+    </main>
+  </body>
+</html>

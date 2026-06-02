@@ -1,0 +1,75 @@
+:root {
+  color-scheme: dark;
+  --ink: #efe7d2;
+  --muted: #b7a98d;
+  --panel: #181512;
+  --line: #59452f;
+  --page: #0b0a09;
+  --accent: #b54a38;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  color: var(--ink);
+  background: var(--page);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0;
+}
+
+.masthead {
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font: 700 0.76rem/1.2 ui-sans-serif, system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+@media (min-width: 760px) {
+  h1 {
+    font-size: 4.5rem;
+  }
+}
+
+.summary {
+  max-width: 42rem;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font: 1rem/1.55 ui-sans-serif, system-ui, sans-serif;
+}
+
+.terminal-frame {
+  min-height: 68vh;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 88%, black);
+}
+
+.terminal-frame > script {
+  display: block;
+}
+
+py-terminal,
+.terminal-frame .xterm {
+  min-height: 68vh;
+}
