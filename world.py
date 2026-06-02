@@ -141,10 +141,14 @@ def setup_amon_house():
             "stairs": "The narrow stair rises at the far end of the hallway to a small landing beneath the attic door.",
             "narrow stair": "The narrow stair rises at the far end of the hallway to a small landing beneath the attic door.",
             "attic stair": "The narrow stair rises at the far end of the hallway to a small landing beneath the attic door.",
-            "portraits": "The oil paintings show Amon ancestors in dark formal clothes, each face severe with old family certainty. Their painted eyes seem to track your every move.",
-            "paintings": "The oil paintings show Amon ancestors in dark formal clothes, each face severe with old family certainty. Their painted eyes seem to track your every move.",
-            "oil paintings": "The oil paintings show Amon ancestors in dark formal clothes, each face severe with old family certainty. Their painted eyes seem to track your every move.",
-            "ancestor paintings": "The oil paintings show Amon ancestors in dark formal clothes, each face severe with old family certainty. Their painted eyes seem to track your every move.",
+            "portrait": "The oil paintings form a severe family procession: AMON, ELISE, MARIUS, and HESTER. Their formal clothes belong to different decades, but every painted hand points subtly toward the attic stair.",
+            "portraits": "The oil paintings form a severe family procession: AMON, ELISE, MARIUS, and HESTER. Their formal clothes belong to different decades, but every painted hand points subtly toward the attic stair.",
+            "painting": "The oil paintings form a severe family procession: AMON, ELISE, MARIUS, and HESTER. Their formal clothes belong to different decades, but every painted hand points subtly toward the attic stair.",
+            "paintings": "The oil paintings form a severe family procession: AMON, ELISE, MARIUS, and HESTER. Their formal clothes belong to different decades, but every painted hand points subtly toward the attic stair.",
+            "oil painting": "The oil paintings form a severe family procession: AMON, ELISE, MARIUS, and HESTER. Their formal clothes belong to different decades, but every painted hand points subtly toward the attic stair.",
+            "oil paintings": "The oil paintings form a severe family procession: AMON, ELISE, MARIUS, and HESTER. Their formal clothes belong to different decades, but every painted hand points subtly toward the attic stair.",
+            "ancestor painting": "The oil paintings form a severe family procession: AMON, ELISE, MARIUS, and HESTER. Their formal clothes belong to different decades, but every painted hand points subtly toward the attic stair.",
+            "ancestor paintings": "The oil paintings form a severe family procession: AMON, ELISE, MARIUS, and HESTER. Their formal clothes belong to different decades, but every painted hand points subtly toward the attic stair.",
             "ancestors": "The painted ancestors look less like memorials than witnesses. Their nameplates are small, tarnished, and carefully polished around the edges."
         }
     )
@@ -195,16 +199,20 @@ def setup_amon_house():
 
     rooms["Attic"] = Room(
         "The Attic (Grandma's Room)",
-        "The attic is narrow and close beneath the roof beams. South, the open door back to the landing waits behind you. Grandma sits in her rocking chair with her back to you, placed as if she has always belonged at the room's center. Beside her, a small table holds a silver teapot, and violet steam coils from its spout.",
-        "The attic is crowded with flickering, translucent figures, each one hollow where a face should be. South through the open door lies the landing and the hallway beyond, though the guests seem to prefer you not notice it. They press around the rocking chair, around the table, around the violet steam rising from the teapot's spout, gathering the room's attention around Grandma and you.",
+        "The attic is narrow and close beneath the roof beams. South, the open door back to the landing waits behind you. Grandma sits in her rocking chair with her back to you, placed as if she has always belonged at the room's center. Beside her, a small table holds a silver teapot and a single china teacup, and violet steam coils from the pot's spout.",
+        "The attic is crowded with flickering, translucent figures, each one hollow where a face should be. South through the open door lies the landing and the hallway beyond, though the guests seem to prefer you not notice it. They press around the rocking chair, around the table, around the violet steam rising from the teapot's spout, gathering the room's attention around Grandma, the waiting teacup, and you.",
         {"south": "Attic Landing", "down": "Attic Landing"},
-        items={"teapot": ["amon", "pot", "tea"]},
+        items={
+            "teapot": ["amon", "pot", "tea"],
+            "china teacup": ["cup", "teacup", "tea cup", "china cup"]
+        },
         scenery={
             "grandma": "She sits with her back to you in the rocking chair, as if she has been waiting long enough to become part of the furniture.",
             "rocking chair": "Dark wood polished by years of use. It moves in a patient rhythm that suggests it remembers every body it has carried.",
             "steam": "The violet steam rises in delicate coils, but now and then it gathers into shapes too deliberate to be called accidental.",
-            "table": "A small table set with a single teapot and the expectation of company.",
-            "cups": "You cannot see any cups at first, only the spaces where they ought to be."
+            "table": "A small table is set with a silver teapot and one china teacup, arranged with the precision of a place setting that has waited too long.",
+            "cups": "Only one teacup is visible, though the air around the table leaves room for many more.",
+            "teacups": "Only one teacup is visible, though the air around the table leaves room for many more."
         }
     )
 
