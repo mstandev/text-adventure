@@ -120,18 +120,10 @@ def build_html():
   <body>
     <main class="shell">
       <header class="masthead">
-        <p class="eyebrow">PyScript branch</p>
         <h1>House of Amon</h1>
-        <p class="summary">
-          The Python game logic, bundled for the browser.
-        </p>
       </header>
 
-      <section class="output-frame" aria-label="Game output">
-        <pre id="game-output"></pre>
-      </section>
-
-      <section class="location-bar" aria-label="Current game state">
+      <section class="location-bar" aria-label="Current game state" hidden>
         <div class="location-group">
           <span class="bar-label">Current Location</span>
           <strong id="current-location">Loading Python...</strong>
@@ -144,6 +136,10 @@ def build_html():
           <span id="runtime-spinner" class="spinner" aria-hidden="true"></span>
           <span id="runtime-status">Loading Python runtime...</span>
         </div>
+      </section>
+
+      <section class="output-frame" aria-label="Game output">
+        <pre id="game-output"></pre>
       </section>
 
       <form id="command-form" class="command-panel" aria-label="Game command">
