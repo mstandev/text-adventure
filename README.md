@@ -1,10 +1,13 @@
 # The House of Amon
 
-A command-line text adventure inspired by classic interactive fiction like Zork.
+A gothic parser-based text adventure about a family estate, a locked attic, a ritual teapot, and the voices the house calls guests.
 
-You explore the Amon estate, collect items, inspect strange scenery, unlock rooms, and uncover what Grandma has been preparing in the upper attic.
+The current build can be played two ways:
 
-## How to play
+- In a terminal with Python.
+- In a browser through the generated PyScript wrapper.
+
+## Play In Python
 
 From this folder, run:
 
@@ -12,29 +15,65 @@ From this folder, run:
 python3 main.py
 ```
 
-Type commands such as:
+## Play In The Browser
+
+Open `index.html` in a browser. The page loads the Python runtime, starts the game automatically, and shows a command input labeled `What do you do?`
+
+If your browser blocks the local file, serve the folder locally:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+## Current Game
+
+The playable build includes:
+
+- A compact estate map with the Front Gate, Front Door, Foyer, Living Room, Dining Room, Study, Kitchen, Cellar, Garden, Shed, Upstairs Hallway, Your Bedroom, Attic Landing, and Attic.
+- A clear attic access puzzle involving the front-door knocker, brass key, upstairs paintings, hidden carving, attic lock, and attic knock.
+- Investigation verbs for inspecting, searching, reading, listening, smelling, and peeking.
+- Social commands for talking, asking Grandma or Mother about topics, and showing discovered items.
+- Item interaction with taking, dropping, unlocking, moving, turning, using, sharpening, pouring, drinking, and attacking.
+- Grounded, full-trance, and weakened-trance perception states.
+- A ritual branch where drinking tea differs from using hearth ash against the teapot's steam.
+- A witness-jar clue chain involving Mother's bloodied bandage.
+- A china teacup and teapot that return to the attic if carried away.
+- Missy as an internal voice rather than a visible character.
+- Branch-aware bad endings for violent choices.
+- A restart command with confirmation.
+
+## Example Commands
 
 ```text
 help
-look
-north
+inspect
+n
+s
 knock door
-search
-smell tea
-read portraits
-ask grandma about tea
-show key to grandma
-move portraits
+enter house
+search room
+read ledger
+show photo to mother
+move paintings
 take brass key
-inventory
-drop spoon
-unlock attic
-use stone on axe
+unlock attic door
+knock on door
+enter attic
 drink tea
+use bandage on jar
+search hearth
+use ash on teapot
+restart
 quit
 ```
 
-Short directions work too:
+Short directions work:
 
 ```text
 n
@@ -45,12 +84,18 @@ u
 d
 ```
 
-## Files
+## Project Files
 
-- `main.py` runs the game loop and handles player actions.
-- `engine.py` contains the parser, room model, and game state.
-- `world.py` defines the rooms, exits, items, and descriptions.
+- `main.py`: game session, command handling, puzzle logic, branching states, endings, and move counting.
+- `engine.py`: parser, room model, and game state.
+- `world.py`: room graph, exits, items, scenery, and room descriptions.
+- `build_pyscript_bundle.py`: rebuilds the browser wrapper by embedding the Python sources into `index.html`.
+- `web.css`: browser UI styling.
+- `index.html`: generated browser version of the game.
+- `GAME_DESIGN.md`: current design reference for the implemented build.
 
-## Current status
+When changing Python game logic that should appear in the browser version, rebuild `index.html`:
 
-This is an early playable prototype. The core loop works, including movement, examining scenery, taking and dropping items, room searching, listening, talking, unlocking the attic, inventory, item use, and the trance state.
+```bash
+python3 build_pyscript_bundle.py
+```
