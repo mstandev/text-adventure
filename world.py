@@ -7,8 +7,14 @@ def setup_amon_house():
     rooms["Front Gate"] = Room(
         "The Front Gate",
         "The rusted iron gates of the Amon estate stand before you, their hinges weeping orange tears of rust. North, a leaf-choked path climbs toward the house and the dark weight of its front door. South, beyond a low run of stone, the family cemetery waits in the fog. Dead leaves gather around your shoes and crunch like old bone whenever you shift your weight.",
-        "The gates have transformed into skeletal hands, clawing at a sky the color of a fresh bruise. North, the path to the house feels like a long, cold throat. South, the cemetery exhales through its crooked stones. The leaves at your feet skitter without wind, as if the grounds themselves are trying to decide which way you belong.",
-        {"north": "Front Door", "south": "Cemetery"}
+        "The gates have transformed into skeletal hands, each iron bar curling like a finger around the edge of the path. North, the way to the house narrows into a long, cold throat, and every dead leaf points toward the door as if arranged by breath. South, the cemetery exhales through its crooked stones, answering the house with little scratches beneath the soil. Above you, the sky bruises darker each time you look away.",
+        {"north": "Front Door", "south": "Cemetery"},
+        scenery={
+            "gate": "The iron gate is rusted open just enough to admit you. Its bars are cold, wet, and flecked with old orange rust.",
+            "gates": "The iron gates are rusted open just enough to admit you. Their bars are cold, wet, and flecked with old orange rust.",
+            "iron gate": "The iron gate is rusted open just enough to admit you. Its bars are cold, wet, and flecked with old orange rust.",
+            "iron gates": "The iron gates are rusted open just enough to admit you. Their bars are cold, wet, and flecked with old orange rust."
+        }
     )
 
     rooms["Cemetery"] = Room(
@@ -161,7 +167,7 @@ def setup_amon_house():
         scenery={
             "door": "The attic door is heavy oak, set north beneath the roofline. Its brass lock and ornate keyhole make it look less locked than expectant.",
             "attic door": "The attic door is heavy oak, set north beneath the roofline. Its brass lock and ornate keyhole make it look less locked than expectant.",
-            "keyhole": "You see a faint flickering light on the other side. You hear voices laughing insanely.",
+            "keyhole": "You see a faint flickering light on the other side. At the edge of the narrow view, a rocking chair moves beside a small table with something pale set on top.",
             "lock": "The brass lock is old and cold. Its keyway is shaped for something small, precise, and unwilling to be forced.",
             "landing": "The landing is hardly more than a pause at the top of the narrow stair, but the house treats it like a threshold.",
             "stair": "The narrow stair falls back down to the upstairs hallway.",

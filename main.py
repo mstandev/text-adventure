@@ -19,6 +19,10 @@ def resolve_item(gs, name, context="room"):
     print(f"\nWhich {name} do you mean?")
     for i, match in enumerate(matches, 1):
         print(f"{i}. {match}")
+
+    if not getattr(gs, "allow_interactive_prompts", True):
+        print("Type the full item name so the house knows exactly what you mean.")
+        return None
     
     choice = input("> ")
     if choice.isdigit() and 0 < int(choice) <= len(matches):
@@ -76,6 +80,9 @@ def print_room(gs, include_entry=True):
     room = gs.rooms[gs.current_room]
     print(f"\n--- {room.name} ---")
     print(room_text(gs, room))
+    if gs.current_room == "Front Gate" and not gs.front_gate_hint_seen:
+        print("\nThe gate gives you the simplest choice first. What do you want to do? Type a direction (n, s, w, e), or inspect gate.")
+        gs.front_gate_hint_seen = True
     if include_entry:
         handle_room_entry(gs, room)
     if room.items:
@@ -775,26 +782,68 @@ def new_game():
     rooms = setup_amon_house()
     return rooms, GameState(rooms)
 
-def play():
-    rooms, gs = new_game()
-    parser = AdvancedParser()
-    
-    print("WELCOME TO THE HOUSE OF AMON")
-    print("----------------------------")
-    print("Grandma is back. The tea is brewing. Don't listen to the voices.")
+class GameSession:
+    def __init__(self, interactive_prompts=True):
+        self.interactive_prompts = interactive_prompts
+        self.reset()
 
-    suppress_room_display = False
-    while True:
-        room = gs.rooms[gs.current_room]
-        if suppress_room_display:
-            suppress_room_display = False
+    def reset(self):
+        self.rooms, self.gs = new_game()
+        self.gs.allow_interactive_prompts = self.interactive_prompts
+        self.parser = AdvancedParser()
+        self.suppress_room_display = False
+        self.pending_restart = False
+        self.finished = False
+
+    def print_welcome(self):
+        print("WELCOME TO THE HOUSE OF AMON")
+        print("----------------------------")
+        print("Grandma is back. The tea is brewing. Don't listen to the voices.")
+
+    def start(self):
+        self.print_welcome()
+        self.print_room_after_turn()
+
+    def print_room_after_turn(self):
+        if self.finished:
+            return
+        if self.suppress_room_display:
+            self.suppress_room_display = False
         else:
-            print_room(gs)
+            print_room(self.gs)
 
-        user_input = input("\n> ")
+    def handle_command(self, user_input):
+        if self.finished:
+            print("The game has ended. Restart to begin again.")
+            return False
+
+        if self.pending_restart:
+            self.resolve_restart(user_input)
+            self.print_room_after_turn()
+            return not self.finished
+
+        keep_playing = self._process_command(user_input)
+        if keep_playing and not self.finished:
+            self.print_room_after_turn()
+        return keep_playing and not self.finished
+
+    def resolve_restart(self, user_input):
+        self.pending_restart = False
+        if user_input.strip().lower() in ("yes", "y"):
+            self.reset()
+            print("\nThe house exhales, and the night folds back to the beginning.")
+            self.print_welcome()
+        else:
+            print("Restart cancelled. The house keeps its place.")
+
+    def _process_command(self, user_input):
+        gs = self.gs
+        parser = self.parser
+        room = gs.rooms[gs.current_room]
         v, obj, prep, i_obj = parser.parse(user_input)
 
-        if not v: continue
+        if not v:
+            return True
 
         # 1. Global Commands
         if v == "help":
@@ -802,27 +851,22 @@ def play():
 
         elif v == "quit":
             print("The voices will follow you...")
-            break
+            self.finished = True
+            return False
 
         elif v == "restart":
             print("Restart the game from the beginning? Your current progress will be lost.")
-            confirmation = input("> ").strip().lower()
-            if confirmation in ("yes", "y"):
-                rooms, gs = new_game()
-                print("\nThe house exhales, and the night folds back to the beginning.")
-                print("WELCOME TO THE HOUSE OF AMON")
-                print("----------------------------")
-                print("Grandma is back. The tea is brewing. Don't listen to the voices.")
-            else:
-                print("Restart cancelled. The house keeps its place.")
-            continue
+            print("Type yes to restart, or no to keep playing.")
+            self.pending_restart = True
+            self.suppress_room_display = True
+            return True
             
         elif v == "inventory":
             describe_inventory(gs)
 
         elif v == "look":
             print_room(gs, include_entry=False)
-            suppress_room_display = True
+            self.suppress_room_display = True
 
         # 2. Movement Logic
         elif v == "go":
@@ -877,9 +921,11 @@ def play():
         elif v == "examine":
             if not obj:
                 print_room(gs, include_entry=False)
-                suppress_room_display = True
+                self.suppress_room_display = True
             elif obj == "keyhole" and gs.current_room == "Attic Landing":
                 print("\nYou peek through the keyhole. You see tea cups floating in mid-air!")
+                print("At the edge of the narrow view, the curved runner of a rocking chair moves slowly in and out of sight.")
+                print("Beside it waits a small table, mostly hidden by the angle, with something pale and deliberate set on top.")
             elif obj in BEHIND_PAINTING_TARGETS:
                 if gs.current_room == "Foyer":
                     print("There are no paintings in the foyer. The walls here hold shadow and old wallpaper, but no watching faces.")
@@ -1018,6 +1064,13 @@ def play():
                     print("The heavy oak door stands open now, with the dark foyer waiting north. The AMON nameplate beneath the knocker catches a dull glint.")
                 else:
                     print("The oak door is barred from the inside. The only parts that look handled are the brass gargoyle knocker and the narrow AMON nameplate beneath it.")
+            elif gs.current_room == "Front Gate" and obj in ("gate", "gates", "iron gate", "iron gates"):
+                print(state_text(
+                    gs,
+                    room.scenery[obj],
+                    "In trance, the iron gate is not open so much as holding the path apart. Its bars have become long knuckled fingers, rust flaking from them like dried blood. North, the house pulls with the patience of a mouth about to speak; south, the cemetery breathes back.",
+                    "The iron gate has mostly returned to metal, though the bars still seem too much like fingers when seen from the corner of your eye."
+                ))
             elif gs.current_room == "Upstairs Hallway" and obj in PORTRAIT_TARGETS:
                 print(portrait_lore_text(gs))
             elif obj in room.scenery:
@@ -1033,7 +1086,7 @@ def play():
         elif v == "read":
             if not visible_item_for_read(gs, room, obj):
                 print("There is nothing like that here to read.")
-                continue
+                return True
             trance_text = trance_read_text(gs, obj)
             if trance_text:
                 if obj in WITNESS_READ_TARGETS:
@@ -1621,7 +1674,8 @@ def play():
             elif held_item and is_weapon(held_item) and target_name in CHARACTER_TARGETS:
                 handle_attack(gs, room, target_name, held_item)
                 if gs.game_over:
-                    break
+                    self.finished = True
+                    return False
             elif held_item == "bloodied bandage" and target_name in JAR_TARGETS and gs.current_room == "Cellar":
                 gs.witness_awakened = True
                 gs.discovered_witness = True
@@ -1641,7 +1695,7 @@ def play():
                 if not gs.trance:
                     print("The ash scatters across the steam and falls dull through it. Nothing in the room has opened enough for the gesture to matter yet.")
                     print("Grandma watches the failed attempt with mild disappointment. 'Tea first, dear,' she says. 'Then symbols learn to bite.'")
-                    continue
+                    return True
                 gs.teapot_smothered = True
                 gs.ritual_branch = "ash"
                 gs.branch_scene_seen = False
@@ -1753,7 +1807,8 @@ def play():
             weapon_name = i_obj if prep in ("with", "using") else None
             handle_attack(gs, room, obj, weapon_name)
             if gs.game_over:
-                break
+                self.finished = True
+                return False
 
         elif v == "drink":
             drink_target = obj or i_obj
@@ -1818,6 +1873,15 @@ def play():
                 "I don't understand that command. The house, unfortunately, may still pretend that it does.",
                 "I don't understand that command. Whatever once rushed to interpret you has fallen quieter."
             ))
+        return True
+
+def play():
+    session = GameSession(interactive_prompts=True)
+    session.start()
+
+    while not session.finished:
+        user_input = input("\n> ")
+        session.handle_command(user_input)
 
 if __name__ == "__main__":
     play()

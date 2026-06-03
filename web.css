@@ -58,18 +58,128 @@ h1 {
   font: 1rem/1.55 ui-sans-serif, system-ui, sans-serif;
 }
 
-.terminal-frame {
+.runtime-note {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid #59452f;
+  color: #efe7d2;
+  background: #16120f;
+  font: 0.95rem/1.55 ui-sans-serif, system-ui, sans-serif;
+}
+
+.runtime-note code {
+  color: #b9f0ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.start-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: #11100f;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  border: 3px solid rgba(239, 231, 210, 0.2);
+  border-top-color: #efe7d2;
+  border-radius: 50%;
+  animation: spin 0.85s linear infinite;
+}
+
+.spinner[hidden] {
+  display: none;
+}
+
+.start-panel p {
+  margin: 0;
+  flex: 1 1 16rem;
+  color: var(--muted);
+  font: 0.95rem/1.35 ui-sans-serif, system-ui, sans-serif;
+}
+
+.command-panel {
+  margin: 16px 0 0;
+}
+
+.command-panel label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font: 700 0.78rem/1.2 ui-sans-serif, system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.command-row {
+  display: flex;
+  gap: 8px;
+}
+
+.command-row input {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  padding: 0 12px;
+  color: var(--ink);
+  background: #11100f;
+  font: 1rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.command-row input:focus {
+  outline: 2px solid #b9f0ff;
+  outline-offset: 2px;
+}
+
+.command-row input:disabled {
+  color: var(--muted);
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.command-row button {
+  min-width: 76px;
+  min-height: 44px;
+  border: 1px solid #b7a98d;
+  border-radius: 0;
+  color: #0b0a09;
+  background: #efe7d2;
+  font: 700 0.95rem/1 ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.command-row button:disabled {
+  cursor: wait;
+  opacity: 0.56;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.output-frame {
   min-height: 68vh;
+  max-height: 68vh;
+  overflow: auto;
   padding: 12px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--panel) 88%, black);
 }
 
-.terminal-frame > script {
-  display: block;
-}
-
-py-terminal,
-.terminal-frame .xterm {
-  min-height: 68vh;
+.output-frame pre {
+  min-height: calc(68vh - 24px);
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font: 0.95rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }

@@ -102,6 +102,7 @@ class GameState:
         self.discovered_witness = False
         self.missy_heard = False
         self.missy_voice_rooms = set()
+        self.front_gate_hint_seen = False
         self.dead_characters = set()
         self.game_over = False
 
