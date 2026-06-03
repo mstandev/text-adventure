@@ -793,7 +793,11 @@ class GameSession:
         self.parser = AdvancedParser()
         self.suppress_room_display = False
         self.pending_restart = False
+        self.move_count = 0
         self.finished = False
+
+    def current_location(self):
+        return self.gs.rooms[self.gs.current_room].name
 
     def print_welcome(self):
         print("WELCOME TO THE HOUSE OF AMON")
@@ -813,9 +817,14 @@ class GameSession:
             print_room(self.gs)
 
     def handle_command(self, user_input):
+        if not user_input.strip():
+            return not self.finished
+
         if self.finished:
             print("The game has ended. Restart to begin again.")
             return False
+
+        self.move_count += 1
 
         if self.pending_restart:
             self.resolve_restart(user_input)

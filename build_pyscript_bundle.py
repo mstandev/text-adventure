@@ -19,7 +19,7 @@ import io
 import sys
 from pathlib import Path
 
-from js import document
+from js import document, window
 from pyodide.ffi import create_proxy
 
 {assignments}
@@ -31,8 +31,9 @@ sys.path.insert(0, ".")
 
 import main
 
-output = document.getElementById("game-output")
-status = document.getElementById("start-status")
+runtime_status = document.getElementById("runtime-status")
+current_location = document.getElementById("current-location")
+move_count = document.getElementById("move-count")
 spinner = document.getElementById("runtime-spinner")
 command_form = document.getElementById("command-form")
 command_input = document.getElementById("command-input")
@@ -50,15 +51,18 @@ def capture_output(action, *args):
 def append_output(text):
     if not text:
         return
-    if output.textContent:
-        output.textContent += "\\n\\n"
-    output.textContent += text
-    output.parentElement.scrollTop = output.parentElement.scrollHeight
+    window.typeGameText(text)
+
+
+def update_state_bar(message=None):
+    current_location.textContent = session.current_location()
+    move_count.textContent = str(session.move_count)
+    runtime_status.textContent = message or ""
 
 
 def enable_input():
     spinner.hidden = True
-    status.textContent = "Game running. Type a command below."
+    update_state_bar()
     command_input.disabled = False
     send_command.disabled = False
     command_input.placeholder = "Type a command, for example: north"
@@ -66,7 +70,7 @@ def enable_input():
 
 
 def disable_input(message):
-    status.textContent = message
+    update_state_bar(message)
     command_input.disabled = True
     send_command.disabled = True
 
@@ -81,6 +85,7 @@ def handle_submit(event):
     append_output(f"> {{command}}")
     command_input.value = ""
     append_output(capture_output(session.handle_command, command))
+    update_state_bar()
 
     if session.finished:
         disable_input("Game session ended. Refresh the page to begin again.")
@@ -95,7 +100,7 @@ try:
     enable_input()
 except Exception as error:
     spinner.hidden = True
-    status.textContent = f"Unable to start PyScript: {{error}}"
+    runtime_status.textContent = f"Unable to start PyScript: {{error}}"
     append_output(f"Unable to start the game: {{error}}")
 """
 
@@ -122,17 +127,23 @@ def build_html():
         </p>
       </header>
 
-      <section class="runtime-note" aria-label="Runtime note">
-        This page is self-contained, so it can run from <code>file://</code> or from a local web server.
-      </section>
-
-      <section class="start-panel" aria-label="Game status">
-        <span id="runtime-spinner" class="spinner" aria-hidden="true"></span>
-        <p id="start-status" aria-live="polite">Loading Python runtime...</p>
-      </section>
-
       <section class="output-frame" aria-label="Game output">
         <pre id="game-output"></pre>
+      </section>
+
+      <section class="location-bar" aria-label="Current game state">
+        <div class="location-group">
+          <span class="bar-label">Current Location</span>
+          <strong id="current-location">Loading Python...</strong>
+        </div>
+        <div class="move-group">
+          <span class="bar-label">Moves</span>
+          <strong id="move-count">0</strong>
+        </div>
+        <div class="runtime-group" aria-live="polite">
+          <span id="runtime-spinner" class="spinner" aria-hidden="true"></span>
+          <span id="runtime-status">Loading Python runtime...</span>
+        </div>
       </section>
 
       <form id="command-form" class="command-panel" aria-label="Game command">
@@ -151,6 +162,58 @@ def build_html():
         </div>
       </form>
     </main>
+    <script>
+      (() => {{
+        const output = document.getElementById("game-output");
+        const outputFrame = document.querySelector(".output-frame");
+        const textQueue = [];
+        const typeDelayMs = 2;
+        const charsPerTick = 2;
+        let typing = false;
+
+        function scrollOutput() {{
+          outputFrame.scrollTop = outputFrame.scrollHeight;
+        }}
+
+        function typeNextChunk(text, index) {{
+          const nextIndex = Math.min(index + charsPerTick, text.length);
+          output.textContent += text.slice(index, nextIndex);
+          scrollOutput();
+
+          if (nextIndex < text.length) {{
+            window.setTimeout(() => typeNextChunk(text, nextIndex), typeDelayMs);
+            return;
+          }}
+
+          window.setTimeout(typeNextQueuedText, typeDelayMs);
+        }}
+
+        function typeNextQueuedText() {{
+          if (!textQueue.length) {{
+            typing = false;
+            output.classList.remove("is-typing");
+            return;
+          }}
+
+          typing = true;
+          output.classList.add("is-typing");
+          const nextText = textQueue.shift();
+          const prefix = output.textContent ? "\\n\\n" : "";
+          typeNextChunk(`${{prefix}}${{nextText}}`, 0);
+        }}
+
+        window.typeGameText = (text) => {{
+          if (!text) {{
+            return;
+          }}
+
+          textQueue.push(String(text));
+          if (!typing) {{
+            typeNextQueuedText();
+          }}
+        }};
+      }})();
+    </script>
     <script type="py">
 {bootstrap}
     </script>

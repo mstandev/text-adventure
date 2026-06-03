@@ -58,37 +58,69 @@ h1 {
   font: 1rem/1.55 ui-sans-serif, system-ui, sans-serif;
 }
 
-.runtime-note {
-  margin-bottom: 16px;
-  padding: 12px 14px;
-  border: 1px solid #59452f;
-  color: #efe7d2;
-  background: #16120f;
-  font: 0.95rem/1.55 ui-sans-serif, system-ui, sans-serif;
-}
-
-.runtime-note code {
-  color: #b9f0ff;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-
-.start-panel {
+.location-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 16px;
-  padding: 12px;
-  border: 1px solid var(--line);
-  background: #11100f;
+  justify-content: space-between;
+  margin: 12px 0 0;
+  padding: 7px 9px;
+  border: 1px solid var(--ink);
+  color: var(--page);
+  background: color-mix(in srgb, var(--ink) 60%, var(--page));
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+.location-group,
+.move-group,
+.runtime-group {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.location-group {
+  min-width: 0;
+  flex: 1 1 18rem;
+}
+
+.move-group {
+  flex: 0 0 auto;
+}
+
+.runtime-group {
+  min-height: 22px;
+  flex: 1 1 12rem;
+  justify-content: flex-end;
+  color: #3a3026;
+  font-size: 0.66rem;
+}
+
+.bar-label {
+  flex: 0 0 auto;
+  color: #59452f;
+  font-size: 0.54rem;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.location-bar strong {
+  min-width: 0;
+  color: #0b0a09;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .spinner {
   width: 22px;
   height: 22px;
   flex: 0 0 auto;
-  border: 3px solid rgba(239, 231, 210, 0.2);
-  border-top-color: #efe7d2;
+  border: 3px solid rgba(11, 10, 9, 0.2);
+  border-top-color: #0b0a09;
   border-radius: 50%;
   animation: spin 0.85s linear infinite;
 }
@@ -97,15 +129,8 @@ h1 {
   display: none;
 }
 
-.start-panel p {
-  margin: 0;
-  flex: 1 1 16rem;
-  color: var(--muted);
-  font: 0.95rem/1.35 ui-sans-serif, system-ui, sans-serif;
-}
-
 .command-panel {
-  margin: 16px 0 0;
+  margin: 10px 0 0;
 }
 
 .command-panel label {
@@ -166,6 +191,12 @@ h1 {
   }
 }
 
+@keyframes cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .output-frame {
   min-height: 68vh;
   max-height: 68vh;
@@ -182,4 +213,9 @@ h1 {
   overflow-wrap: anywhere;
   color: var(--ink);
   font: 0.95rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.output-frame pre.is-typing::after {
+  content: "_";
+  animation: cursor-blink 0.7s steps(1) infinite;
 }

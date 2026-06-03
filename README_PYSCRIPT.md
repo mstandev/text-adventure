@@ -29,6 +29,7 @@ PyScript loads from `pyscript.net`, so the browser needs internet access the fir
 - `index.html` writes bundled copies of `engine.py`, `world.py`, and `main.py` into PyScript's virtual filesystem before importing the game.
 - A loading spinner appears while PyScript initializes, then the game starts automatically.
 - A browser command box sends each command to the Python `GameSession` and prints the captured output in the page.
+- A current-location bar shows the active room and move count for the browser session.
 
 When `main.py`, `engine.py`, or `world.py` change, regenerate the inline bundle before publishing this branch:
 
