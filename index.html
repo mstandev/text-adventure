@@ -56,7 +56,37 @@
         const textQueue = [];
         const typeDelayMs = 2;
         const charsPerTick = 2;
+        let outputText = "";
         let typing = false;
+
+        function escapeHtml(text) {
+          return text
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+        }
+
+        function isMissyLine(line) {
+          return /Missy's (voice|thought)|Missy (whispers|says)|her voice says.*inside your mind/.test(line);
+        }
+
+        function formatGameText(text) {
+          return text
+            .split("\n")
+            .map((line) => {
+              const safeLine = escapeHtml(line);
+              if (/^--- .+ ---$/.test(line)) {
+                return '<span class="room-title">' + safeLine + '</span>';
+              }
+              if (isMissyLine(line)) {
+                return '<span class="missy-voice">' + safeLine + '</span>';
+              }
+              return safeLine;
+            })
+            .join("\n");
+        }
 
         function scrollOutput() {
           outputFrame.scrollTop = outputFrame.scrollHeight;
@@ -64,7 +94,8 @@
 
         function typeNextChunk(text, index) {
           const nextIndex = Math.min(index + charsPerTick, text.length);
-          output.textContent += text.slice(index, nextIndex);
+          outputText += text.slice(index, nextIndex);
+          output.innerHTML = formatGameText(outputText);
           scrollOutput();
 
           if (nextIndex < text.length) {
@@ -85,8 +116,8 @@
           typing = true;
           output.classList.add("is-typing");
           const nextText = textQueue.shift();
-          const prefix = output.textContent ? "\n\n" : "";
-          typeNextChunk(`${prefix}${nextText}`, 0);
+          const prefix = outputText ? "\n\n" : "";
+          typeNextChunk(prefix + nextText, 0);
         }
 
         window.typeGameText = (text) => {
@@ -129,6 +160,9 @@ command_form = document.getElementById("command-form")
 command_input = document.getElementById("command-input")
 send_command = document.getElementById("send-command")
 session = main.GameSession(interactive_prompts=False)
+ONBOARDING_PLACEHOLDER = "Try: look around, go north, take key"
+PRACTICED_PLACEHOLDER = "Type your next move"
+PRACTICED_PLACEHOLDER_AFTER = 6
 
 
 def capture_output(action, *args):
@@ -150,12 +184,19 @@ def update_state_bar(message=None):
     runtime_status.textContent = message or ""
 
 
+def update_command_placeholder():
+    if session.move_count >= PRACTICED_PLACEHOLDER_AFTER:
+        command_input.placeholder = PRACTICED_PLACEHOLDER
+    else:
+        command_input.placeholder = ONBOARDING_PLACEHOLDER
+
+
 def enable_input():
     spinner.hidden = True
     update_state_bar()
+    update_command_placeholder()
     command_input.disabled = False
     send_command.disabled = False
-    command_input.placeholder = "Try: look around, go north, take key"
     command_input.focus()
 
 
@@ -176,6 +217,7 @@ def handle_submit(event):
     command_input.value = ""
     append_output(capture_output(session.handle_command, command))
     update_state_bar()
+    update_command_placeholder()
 
     if session.finished:
         disable_input("Game session ended. Refresh the page to begin again.")
