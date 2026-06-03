@@ -34,14 +34,16 @@ import main
 runtime_status = document.getElementById("runtime-status")
 current_location = document.getElementById("current-location")
 move_count = document.getElementById("move-count")
+command_move_count = document.getElementById("command-move-count")
 spinner = document.getElementById("runtime-spinner")
 command_form = document.getElementById("command-form")
 command_input = document.getElementById("command-input")
 send_command = document.getElementById("send-command")
 session = main.GameSession(interactive_prompts=False)
-ONBOARDING_PLACEHOLDER = "Try: look around, go north, take key"
+ONBOARDING_PLACEHOLDER = "Begin: inspect, n, s"
 PRACTICED_PLACEHOLDER = "Type your next move"
 PRACTICED_PLACEHOLDER_AFTER = 6
+DANGER_WEAPONS = ("sharp axe", "heavy axe")
 
 
 def capture_output(action, *args):
@@ -57,9 +59,35 @@ def append_output(text):
     window.typeGameText(text)
 
 
+def nearing_bad_ending():
+    gs = session.gs
+    has_danger_weapon = any(item in gs.inventory for item in DANGER_WEAPONS)
+    if gs.game_over or gs.dead_characters:
+        return True
+    if gs.current_room == "Attic" and has_danger_weapon:
+        return True
+    if gs.current_room == "Attic" and gs.attic_choice == "disrupt":
+        return True
+    if gs.ritual_branch == "ash" and has_danger_weapon:
+        return True
+    return False
+
+
+def update_interactive_visual_state():
+    if nearing_bad_ending():
+        document.body.dataset.interactiveState = "danger"
+    elif session.gs.trance:
+        document.body.dataset.interactiveState = "trance"
+    else:
+        document.body.dataset.interactiveState = "early"
+
+
 def update_state_bar(message=None):
+    update_interactive_visual_state()
     current_location.textContent = session.current_location()
     move_count.textContent = str(session.move_count)
+    move_label = "move" if session.move_count == 1 else "moves"
+    command_move_count.textContent = f"{{session.move_count}} {{move_label}}"
     runtime_status.textContent = message or ""
 
 
@@ -105,6 +133,7 @@ def handle_submit(event):
 
 
 try:
+    update_interactive_visual_state()
     append_output(capture_output(session.start))
     submit_proxy = create_proxy(handle_submit)
     command_form.addEventListener("submit", submit_proxy)
@@ -154,7 +183,10 @@ def build_html():
       </section>
 
       <form id="command-form" class="command-panel" aria-label="Game command">
-        <label for="command-input">What do you do?</label>
+        <div class="command-heading">
+          <label for="command-input">What do you do?</label>
+          <span id="command-move-count" class="command-move-count">0 moves</span>
+        </div>
         <div class="command-row">
           <input
             id="command-input"
@@ -192,6 +224,171 @@ def build_html():
           return /Missy's (voice|thought)|Missy (whispers|says)|her voice says.*inside your mind/.test(line);
         }}
 
+        // Keep these callouts deliberate: specific clues, named objects, and puzzle nouns.
+        const interactiveTerms = [
+          "AMON nameplate",
+          "Amon ancestors",
+          "attic door",
+          "attic landing",
+          "attic stair",
+          "back door",
+          "blue fire",
+          "blue flame",
+          "brass key",
+          "brass knocker",
+          "brass lock",
+          "brass nameplate",
+          "bloodied bandage",
+          "carved initials",
+          "carved message",
+          "cellar stairs",
+          "china cup",
+          "china teacup",
+          "cold blue flame",
+          "cold fire",
+          "cracked window",
+          "crooked drawer",
+          "disturbed soil",
+          "family cemetery",
+          "family photograph",
+          "family photo",
+          "floor initials",
+          "front door",
+          "garden door",
+          "garden path",
+          "gargoyle knocker",
+          "grave dirt",
+          "head chair",
+          "hearth ash",
+          "hearth fire",
+          "heavy axe",
+          "hidden carving",
+          "invited blood",
+          "invitation card",
+          "iron gate",
+          "iron gates",
+          "keyhole",
+          "listening room",
+          "loose papers",
+          "loose soil",
+          "narrow stair",
+          "oak door",
+          "old grave",
+          "oil painting",
+          "oil paintings",
+          "ornate keyhole",
+          "place settings",
+          "rocking chair",
+          "ritual ledger",
+          "scarred worktable",
+          "sealed jar",
+          "sharp axe",
+          "sharpening stone",
+          "silver spoon",
+          "silver teapot",
+          "small table",
+          "stone hearth",
+          "tea cup",
+          "the witness",
+          "tool shed",
+          "tools on wall",
+          "violet steam",
+          "warped wardrobe",
+          "warped door",
+          "white bandage",
+          "witness jar",
+          "writing desk",
+          "bandage",
+          "candelabrum",
+          "carving",
+          "drawer",
+          "floorboards",
+          "gargoyle",
+          "Grandma",
+          "grandma",
+          "hearth",
+          "headstones",
+          "initials",
+          "knocker",
+          "lock",
+          "marker",
+          "Missy",
+          "missy",
+          "Mother",
+          "mother",
+          "nameplate",
+          "photograph",
+          "portraits",
+          "sideboard",
+          "steam",
+          "teapot",
+          "teacup",
+          "teacups",
+          "THEM",
+          "witness",
+          "workbench"
+        ].sort((a, b) => b.length - a.length);
+
+        const interactiveTermPattern = new RegExp(
+          "(^|[^A-Za-z0-9_])(" +
+            interactiveTerms.map((term) => term.split(" ").join("\\\\s+")).join("|") +
+            ")(?=$|[^A-Za-z0-9_])",
+          "gi"
+        );
+
+        function highlightInteractiveTerms(safeLine) {{
+          return safeLine.replace(interactiveTermPattern, (match, prefix, term) => {{
+            return prefix + '<span class="interactive-item">' + term + '</span>';
+          }});
+        }}
+
+        function isWordApostrophe(text, index) {{
+          return /[A-Za-z]/.test(text[index - 1] || "") && /[A-Za-z]/.test(text[index + 1] || "");
+        }}
+
+        function formatLineWithHighlights(line) {{
+          return highlightInteractiveTerms(escapeHtml(line));
+        }}
+
+        function formatMissyLine(line) {{
+          let html = "";
+          let index = 0;
+          let inQuote = false;
+
+          for (let i = 0; i < line.length; i += 1) {{
+            if (line[i] !== "'" || isWordApostrophe(line, i)) {{
+              continue;
+            }}
+
+            const chunk = line.slice(index, i);
+            html += inQuote
+              ? '<span class="missy-quote">' + formatLineWithHighlights(chunk) + '</span>'
+              : formatLineWithHighlights(chunk);
+            html += escapeHtml("'");
+            inQuote = !inQuote;
+            index = i + 1;
+          }}
+
+          const rest = line.slice(index);
+          html += inQuote
+            ? '<span class="missy-quote">' + formatLineWithHighlights(rest) + '</span>'
+            : formatLineWithHighlights(rest);
+          return html;
+        }}
+
+        function formatItemsLine(line) {{
+          const match = line.match(/^(Items here: )(.+)$/);
+          if (!match) {{
+            return null;
+          }}
+
+          const items = match[2]
+            .split(", ")
+            .map((item) => '<span class="item-name">' + escapeHtml(item) + '</span>')
+            .join(", ");
+          return escapeHtml(match[1]) + items;
+        }}
+
         function formatGameText(text) {{
           return text
             .split("\\n")
@@ -201,9 +398,13 @@ def build_html():
                 return '<span class="room-title">' + safeLine + '</span>';
               }}
               if (isMissyLine(line)) {{
-                return '<span class="missy-voice">' + safeLine + '</span>';
+                return formatMissyLine(line);
               }}
-              return safeLine;
+              const itemsLine = formatItemsLine(line);
+              if (itemsLine) {{
+                return itemsLine;
+              }}
+              return formatLineWithHighlights(line);
             }})
             .join("\\n");
         }}

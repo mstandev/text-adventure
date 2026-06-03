@@ -6,8 +6,20 @@
   --line: #59452f;
   --page: #14110f;
   --accent: #b54a38;
+  --interactive-early: #f0b86a;
+  --interactive-trance: #e88968;
+  --interactive: var(--interactive-early);
   --output-height: 54vh;
   --terminal-gutter: 12px;
+}
+
+body[data-interactive-state="early"] {
+  --interactive: var(--interactive-early);
+}
+
+body[data-interactive-state="trance"],
+body[data-interactive-state="danger"] {
+  --interactive: var(--interactive-trance);
 }
 
 * {
@@ -43,6 +55,7 @@ body {
 
 h1 {
   margin: 0;
+  color: var(--interactive);
   font-family: "Avenir Next", Avenir, system-ui, sans-serif;
   font-weight: 800;
   font-size: 2.5rem;
@@ -151,11 +164,19 @@ h1 {
   margin: 10px 0 0;
 }
 
+.command-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  align-items: end;
+  gap: 0;
+  margin-bottom: 6px;
+}
+
 .command-panel label {
   display: block;
-  margin-bottom: 6px;
+  margin: 0;
   color: var(--muted);
-  font: 700 0.78rem/1.2 Avenir, "Avenir Next", system-ui, sans-serif;
+  font: 700 1.2rem/1.2 Avenir, "Avenir Next", system-ui, sans-serif;
   text-transform: none;
   letter-spacing: 0;
 }
@@ -187,6 +208,15 @@ h1 {
   opacity: 0.72;
 }
 
+.command-move-count {
+  display: block;
+  margin: 0;
+  color: #aca688;
+  font: 700 0.74rem/1 Avenir, "Avenir Next", system-ui, sans-serif;
+  text-align: center;
+  white-space: nowrap;
+}
+
 .command-row button {
   min-width: 76px;
   min-height: 44px;
@@ -215,6 +245,16 @@ h1 {
   }
 }
 
+@keyframes interactive-rgb-scan {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 200% 50%;
+  }
+}
+
 .output-frame {
   min-height: var(--output-height);
   max-height: var(--output-height);
@@ -234,11 +274,43 @@ h1 {
 }
 
 .output-frame .room-title {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: calc(1em + 2px);
 }
 
-.output-frame .missy-voice {
+.output-frame .item-name,
+.output-frame .interactive-item {
+  color: var(--interactive);
+  font-weight: 700;
+}
+
+.output-frame .missy-quote {
   color: #fff6d8;
+  font-style: italic;
+}
+
+.output-frame .missy-quote .interactive-item {
+  color: var(--interactive);
+}
+
+body[data-interactive-state="danger"] .output-frame .item-name,
+body[data-interactive-state="danger"] .output-frame .interactive-item {
+  color: transparent;
+  background-image: linear-gradient(
+    90deg,
+    #ff4b4b,
+    #ffb238,
+    #fff36b,
+    #4dff7d,
+    #48d8ff,
+    #7674ff,
+    #ff65d8,
+    #ff4b4b
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: interactive-rgb-scan 1.4s linear infinite;
 }
 
 .output-frame pre.is-typing::after {

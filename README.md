@@ -2,7 +2,7 @@
 
 A command-line text adventure inspired by classic interactive fiction like Zork.
 
-You explore the Amon estate, collect items, inspect strange scenery, unlock rooms, and uncover what Grandma has been brewing.
+You explore the Amon estate, collect items, inspect strange scenery, unlock rooms, and uncover what Grandma has been preparing in the upper attic.
 
 ## How to play
 

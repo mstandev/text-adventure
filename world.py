@@ -66,7 +66,7 @@ def setup_amon_house():
     rooms["Living Room"] = Room(
         "The Living Room",
         "Mother lies on a velvet sofa, her face a mask of waxen exhaustion. The foyer waits east through a dark archway, and a narrow doorway north leads into a study crowded with books and papers. A white bandage on Mother's hand is the only bright thing in the room, brighter even than the dust filmed across the furniture.",
-        "Mother's shadow stands over her, a tall, faceless thing that turns as you enter. East, the foyer shivers with detached shadows; north, the study's papers whisper against one another. The room smells of copper and unwashed tea cups, and the bandage gleams like a small accusation beneath the thing that is almost her shape.",
+        "Mother's shadow stands over her, a tall, faceless thing that turns as you enter. East, the foyer shivers with detached shadows; north, the study's papers whisper against one another. The room smells of copper and unwashed china teacups, and the bandage gleams like a small accusation beneath the thing that is almost her shape.",
         {"east": "Foyer", "north": "Study"},
         scenery={
             "mother": "She looks as if she has been sleeping for a hundred years and suffering through every minute of it.",
@@ -78,7 +78,7 @@ def setup_amon_house():
     rooms["Dining Room"] = Room(
         "The Dining Room",
         "A long walnut table dominates the room east of the foyer, laid for a family meal that never came. The only doorway leads west, back to the hall. Three place settings sit beneath a blackened silver candelabrum, and at the head of the table a fourth chair waits in stern silence. A sideboard crouches against the wall, its drawers swollen with damp.",
-        "The table stretches far beyond the walls, laid for more guests than the room could ever hold. West, the foyer looks thin and ordinary, a painted exit on the wrong kind of wall. Invisible diners shift their cutlery in the dark, and the empty head chair rocks gently as if someone impatient has just risen from it.",
+        "The table stretches far beyond the walls, laid for more guests than the room could ever hold. West, the foyer looks thin and ordinary, a painted exit on the wrong kind of wall. Shadowed diners shift their cutlery in the dark, and the empty head chair rocks gently as if someone impatient has just risen from it.",
         {"west": "Foyer"},
         items={"family photograph": ["photo", "photograph", "family photo"]},
         scenery={
@@ -205,19 +205,18 @@ def setup_amon_house():
 
     rooms["Attic"] = Room(
         "The Attic (Grandma's Room)",
-        "The attic is narrow and close beneath the roof beams. South, the open door back to the landing waits behind you. Grandma sits in her rocking chair with her back to you, placed as if she has always belonged at the room's center. Beside her, a small table holds a silver teapot and a single china teacup, and violet steam coils from the pot's spout.",
+        "The attic is narrow and close beneath the roof beams. South, the open door back to the landing waits behind you. Grandma sits in her rocking chair with her back to you, placed as if she has always belonged at the room's center. Beside her, a small table holds a silver teapot and a single china teacup, and violet steam coils from the teapot's spout.",
         "The attic is crowded with flickering, translucent figures, each one hollow where a face should be. South through the open door lies the landing and the hallway beyond, though the guests seem to prefer you not notice it. They press around the rocking chair, around the table, around the violet steam rising from the teapot's spout, gathering the room's attention around Grandma, the waiting teacup, and you.",
         {"south": "Attic Landing", "down": "Attic Landing"},
         items={
-            "teapot": ["amon", "pot", "tea"],
-            "china teacup": ["cup", "teacup", "tea cup", "china cup"]
+            "teapot": ["pot", "tea", "silver teapot"],
+            "china teacup": ["cup", "teacup", "china cup", "tea cup"]
         },
         scenery={
             "grandma": "She sits with her back to you in the rocking chair, as if she has been waiting long enough to become part of the furniture.",
             "rocking chair": "Dark wood polished by years of use. It moves in a patient rhythm that suggests it remembers every body it has carried.",
             "steam": "The violet steam rises in delicate coils, but now and then it gathers into shapes too deliberate to be called accidental.",
             "table": "A small table is set with a silver teapot and one china teacup, arranged with the precision of a place setting that has waited too long.",
-            "cups": "Only one teacup is visible, though the air around the table leaves room for many more.",
             "teacups": "Only one teacup is visible, though the air around the table leaves room for many more."
         }
     )

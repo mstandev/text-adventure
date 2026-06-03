@@ -2,7 +2,7 @@
 
 ## Premise
 
-A young protagonist returns to a decaying family house where their grandmother has resumed strange nightly rituals involving tea, blood, and unseen visitors. The house itself seems to amplify memory, guilt, and obedience. The player must explore the estate, understand the rituals, protect what remains of the family, and decide whether to destroy, inherit, or join the power inside the house.
+A young protagonist returns to a decaying family house where Grandma has resumed strange nightly rituals involving tea, blood, and 'THEM'. The house itself seems to amplify memory, guilt, and obedience. The player must explore the estate, understand the rituals, protect what remains of the family, and decide whether to destroy, inherit, or join the power inside the house.
 
 This game is inspired by classic gothic horror and occult family drama. It should feel personal, claustrophobic, dreamlike, and increasingly unstable.
 
@@ -64,7 +64,7 @@ What happens:
 - The front door is barred.
 - Grandma has recently returned from an institution, sanatorium, or unexplained absence.
 - Mother is strained and evasive.
-- The sibling is suspicious and frightened.
+- Missy is suspicious and frightened.
 - The house immediately establishes that some spaces are forbidden.
 
 Player questions:
@@ -94,9 +94,9 @@ Goal: explore the family spaces and learn the hidden rules.
 
 What happens:
 
-- The player begins to hear or glimpse the unseen guests.
+- The player begins to hear or glimpse 'THEM'.
 - Mother weakens.
-- The sibling tries to warn the player more directly.
+- Missy tries to warn the player more directly.
 - The player discovers that the house rewards silence, obedience, and curiosity in equal measure.
 
 Player questions:
@@ -123,16 +123,16 @@ Puzzle beats:
 - Gather a set of practical tools and occult objects.
 - Learn that one object in the house holds or channels the ritual presence.
 
-## Act 3: Tea Night
+## Act 3: The Attic Ritual
 
 Goal: witness the ritual and decide how close to it the player is willing to get.
 
 What happens:
 
 - The player gains access to the attic.
-- Grandma hosts a tea ritual with invisible presences.
+- Grandma hosts a tea ritual with 'THEM'.
 - The player enters an altered state that reveals the deeper version of the house.
-- The family crisis becomes immediate: Mother is being drained, and the sibling is at risk.
+- The family crisis becomes immediate: Mother is being drained, and Missy is at risk.
 
 Player questions:
 
@@ -158,7 +158,7 @@ Goal: disrupt the ritual system and survive the house’s backlash.
 What happens:
 
 - The player damages or removes the focus object.
-- The unseen guests become openly hostile.
+- 'THEM' become openly hostile.
 - Objects animate, exits shift, and the house stops pretending to be normal.
 - The player must move quickly to protect at least one family member or secure proof of what happened.
 
@@ -197,7 +197,7 @@ Possible endings:
 - Bury the focus object and leave, but remain haunted.
 - Take control of the ritual and become the next keeper.
 - Save a family member but leave the house active.
-- Fail to resist and join the invisible guests.
+- Fail to resist and join 'THEM'.
 
 ## Current Map
 
@@ -269,7 +269,7 @@ Family items:
 
 Ritual/document items:
 
-- Teapot, also called Amon: found in the Attic.
+- Teapot: found in the Attic.
 - Ritual ledger: found in the Study.
 - Invitation card: found in the Study.
 - Hearth ash: found by searching the Kitchen while in full trance.
@@ -279,7 +279,7 @@ State-aware item notes:
 
 - Once the family photograph is taken, Dining Room search and sideboard descriptions should no longer show it as present.
 - Once the bandage is taken, Living Room descriptions should mention Mother's exposed hand instead of the bandage.
-- Once the teapot is taken, Attic descriptions should no longer say that Amon sits on the table.
+- Once the teapot is taken, Attic descriptions should no longer say that the teapot sits on the table.
 
 ## Current Attic Access Puzzle
 
@@ -303,7 +303,7 @@ There are three perception states:
 
 - Grounded: the house is unsettling but still mostly physical and literal.
 - Full trance: begins after the player drinks tea in the Attic. Rooms reveal supernatural structure, stronger sensory clues, and ritual meanings.
-- Weakened trance: begins when the player smothers Amon's steam with hearth ash while already in trance. The supernatural remains visible, but the house has less authority over perception.
+- Weakened trance: begins when the player smothers the teapot's steam with hearth ash while already in trance. The supernatural remains visible, but the house has less authority over perception.
 
 Trance affects:
 
@@ -325,22 +325,22 @@ Mechanically actionable trance clues:
 The first Attic encounter presents three meaningful attitudes:
 
 - Comply: drink the tea and enter the obedient path.
-- Question too far: ask Grandma about Mother, Missy, the tea, the house, or THEM.
+- Question too far: ask Grandma about Mother, Missy, the tea, the house, or 'THEM'.
 - Disrupt: pour/spill the tea or later use hearth ash against the steam.
 
 Obedient tea path:
 
 - `drink tea` in the Attic sets the player into full trance.
 - The room becomes more welcoming and dangerous.
-- The invisible guests accept the player as a participant.
+- 'THEM' accept the player as a participant.
 
 Ash-smothering path:
 
 - The player must learn about the witness jar and hearth ash.
 - Use Mother's bloodied bandage on the sealed jar in the Cellar to awaken the witness.
-- The witness explains that Amon is fed through steam and that hearth ash can interrupt the ritual.
+- The witness explains that the teapot feeds Amon through steam and that hearth ash can interrupt the ritual.
 - Search the Kitchen while in full trance to find hearth ash.
-- Use or cast hearth ash on the teapot, tea, Amon, steam, or violet steam in the Attic.
+- Use or cast hearth ash on the teapot, tea, steam, or violet steam in the Attic.
 - The teapot is not destroyed outright; its steam is smothered and the ritual branch changes.
 - If the player was in full trance, this changes the state to weakened trance.
 
@@ -348,7 +348,7 @@ Witness jar rule:
 
 - The jar cannot be smashed, cracked, or broken, even with the axe.
 - The jar responds to bloodline evidence, specifically Mother's bloodied bandage.
-- The witness clue currently says: "When Amon is fed, the house opens. When Amon is broken, cast hearth ash across the steam or the guests will keep drinking from the air."
+- The witness clue currently says: "When the teapot is fed, Amon opens. When the teapot is choked, cast hearth ash across the steam or 'THEM' will keep drinking from the air."
 
 ## Current Combat Design
 
@@ -358,10 +358,10 @@ Supported combat targets:
 
 - Mother: attacking her causes a bad ending.
 - Grandma: attacking her without the right conditions fails or causes a bad ending.
-- Grandma with the sharp axe after Amon is smothered causes a different bad ending, because the guests remain.
+- Grandma with the sharp axe after the teapot is smothered causes a different bad ending, because 'THEM' remain.
 - Sealed jar: can be struck or attacked, but does not break.
 - Missy: cannot be attacked, because she is a spirit or presence rather than a body.
-- Teapot/Amon: direct attack text redirects the player toward the importance of the steam.
+- Teapot: direct attack text redirects the player toward the importance of the steam.
 
 Combat verbs include:
 
@@ -402,7 +402,7 @@ Avoid:
 
 ## Family Roles
 
-Grandmother:
+Grandma:
 
 - Charismatic, cruel, theatrical, manipulative.
 - May be frailer physically than she appears.
@@ -413,7 +413,7 @@ Mother:
 - A tragic figure caught between protection and surrender.
 - Starts passive, but may still help in small, costly ways.
 
-Sibling:
+Missy:
 
 - Sees danger earlier than the player.
 - Acts as emotional conscience and practical warning system.

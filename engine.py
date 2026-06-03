@@ -24,7 +24,7 @@ class AdvancedParser:
             "open": ("open",),
             "enter": ("enter",),
             "close": ("close", "shut"),
-            "move": ("move", "push", "pull", "drag", "lift"),
+            "move": ("move", "push", "pull", "drag", "lift", "turn", "rotate", "shift", "slide", "straighten", "adjust", "tilt"),
             "pour": ("pour", "spill"),
             "light": ("light", "ignite", "burn"),
             "sharpen": ("sharpen", "hone", "whet"),
