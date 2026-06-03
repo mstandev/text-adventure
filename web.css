@@ -1,6 +1,6 @@
 :root {
   color-scheme: dark;
-  --ink: #efe7d2;
+  --ink: #f3e9bf;
   --muted: #b7a98d;
   --panel: #181512;
   --line: #59452f;
@@ -19,7 +19,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--page);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Avenir, "Avenir Next", system-ui, sans-serif;
 }
 
 .shell {
@@ -43,6 +43,8 @@ body {
 
 h1 {
   margin: 0;
+  font-family: "Avenir Next", Avenir, system-ui, sans-serif;
+  font-weight: 800;
   font-size: 2.5rem;
   line-height: 0.95;
   letter-spacing: 0;
@@ -153,7 +155,7 @@ h1 {
   display: block;
   margin-bottom: 6px;
   color: var(--muted);
-  font: 700 0.78rem/1.2 ui-sans-serif, system-ui, sans-serif;
+  font: 700 0.78rem/1.2 Avenir, "Avenir Next", system-ui, sans-serif;
   text-transform: uppercase;
   letter-spacing: 0;
 }
@@ -167,11 +169,11 @@ h1 {
   width: 100%;
   min-height: 44px;
   border: 0;
-  border-radius: 0;
+  border-radius: 8px 0 0 8px;
   padding: 0 12px;
   color: var(--ink);
   background: color-mix(in srgb, #11100f 82%, white);
-  font: 1rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 1rem/1.2 Menlo, Monaco, Consolas, monospace;
 }
 
 .command-row input:focus {
@@ -189,10 +191,10 @@ h1 {
   min-width: 76px;
   min-height: 44px;
   border: 0;
-  border-radius: 0;
+  border-radius: 0 8px 8px 0;
   color: #0b0a09;
-  background: #efe7d2;
-  font: 700 0.95rem/1 ui-sans-serif, system-ui, sans-serif;
+  background: var(--ink);
+  font: 700 0.95rem/1 Avenir, "Avenir Next", system-ui, sans-serif;
   cursor: pointer;
 }
 
@@ -228,7 +230,7 @@ h1 {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   color: var(--ink);
-  font: 0.95rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 0.95rem/1.45 Menlo, Monaco, Consolas, monospace;
 }
 
 .output-frame pre.is-typing::after {

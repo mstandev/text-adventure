@@ -34,7 +34,7 @@
       </section>
 
       <form id="command-form" class="command-panel" aria-label="Game command">
-        <label for="command-input">Command</label>
+        <label for="command-input">What do you do?</label>
         <div class="command-row">
           <input
             id="command-input"
@@ -155,7 +155,7 @@ def enable_input():
     update_state_bar()
     command_input.disabled = False
     send_command.disabled = False
-    command_input.placeholder = "Type a command, for example: north"
+    command_input.placeholder = "Try: look around, go north, take key"
     command_input.focus()
 
 
