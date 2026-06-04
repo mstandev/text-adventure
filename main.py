@@ -630,6 +630,140 @@ def enter_front_door(gs):
         "You step through the open front door. The house lets you in, though less eagerly than before."
     ))
 
+def room_name_aliases(room_id, room):
+    names = {room_id.lower(), room.name.lower()}
+    for name in tuple(names):
+        if name.startswith("the "):
+            names.add(name[4:])
+        if name.startswith("your "):
+            names.add(name[5:])
+        if name.endswith(" hallway"):
+            names.add("hallway")
+        if name.endswith(" bedroom"):
+            names.add("bedroom")
+        if name.endswith(" landing"):
+            names.add("landing")
+    return {name.replace("'s", "s") for name in names}
+
+def is_current_room_reference(gs, room, target):
+    if not target:
+        return False
+    return target in room_name_aliases(gs.current_room, room)
+
+def resolve_movement_direction(gs, room, target):
+    if not target:
+        return None
+    if target in STAIR_TARGETS:
+        if "up" in room.exits:
+            return "up"
+        if "down" in room.exits:
+            return "down"
+    if target in OUT_TARGETS:
+        preferred_destinations = (
+            "Garden", "Front Door", "Front Gate", "Upstairs Hallway",
+            "Attic Landing", "Foyer", "Kitchen"
+        )
+        for preferred_destination in preferred_destinations:
+            for direction, destination in room.exits.items():
+                if destination == preferred_destination:
+                    return direction
+        if len(room.exits) == 1:
+            return next(iter(room.exits))
+    for direction, destination in room.exits.items():
+        destination_room = gs.rooms[destination]
+        if target == direction or target in room_name_aliases(destination, destination_room):
+            return direction
+    return None
+
+def known_room_name(gs, target):
+    if not target:
+        return False
+    return any(target in room_name_aliases(room_id, room) for room_id, room in gs.rooms.items())
+
+def room_display_for_target(gs, target):
+    for room_id, room in gs.rooms.items():
+        if target in room_name_aliases(room_id, room):
+            return room.name
+    return "That room"
+
+def move_player(gs, room, direction):
+    destination = room.exits[direction]
+    reclaim_attic_items_if_leaving(gs, room, destination)
+    gs.current_room = destination
+    print(state_text(
+        gs,
+        f"You head {direction}...",
+        f"You head {direction}, and the house seems to adjust around your choice before you arrive.",
+        f"You head {direction}. The house yields the path, though reluctantly."
+    ))
+
+def take_mother_bandage(gs, room):
+    if gs.bandage_taken:
+        print("The bandage is already gone from Mother's hand.")
+        return False
+    gs.bandage_taken = True
+    gs.inventory["bloodied bandage"] = [
+        "bandage", "white bandage", "bloodied bandage",
+        "cloth", "white cloth", "bloodied cloth",
+        "mother's bandage", "mothers bandage"
+    ]
+    room.scenery["bandage"] = "The bandage is gone from Mother's hand. A dark red stain remains on the exposed skin beneath."
+    print(state_text(
+        gs,
+        "You carefully loosen the bandage from Mother's hand. It comes away warm and spotted through with old blood.",
+        "You carefully loosen the bandage from Mother's hand. In trance it feels less like cloth than a kept promise, still warm with the ritual that wanted to claim it.",
+        "You carefully loosen the bandage from Mother's hand. It feels lighter than before, but more accusing, as if now it belongs to a choice instead of a spell."
+    ))
+    return True
+
+def unlock_attic_door(gs, room):
+    item_id = resolve_item(gs, "key", "inventory")
+    if item_id == "brass key":
+        if gs.attic_unlocked:
+            print("It's already unlocked.")
+        elif not gs.moved_portraits:
+            print("The key yields a little, then binds as though another hand has taken hold of it from within.")
+            print("Somewhere along the hallway wall, wood taps once against plaster. The watching faces seem to know why you are being refused.")
+        elif not gs.attic_primed:
+            print("\nThe key turns with a grudging click, then stops at a second catch.")
+            print("A breath escapes the seam of the door, carrying a whisper soft as dust across a coffin lid: 'Knock, and be named.'")
+            gs.attic_primed = True
+            room.scenery["door"] = "The lock has given way once, but the room beyond still insists on being asked, as if a key can open the metal but not the will behind it."
+            room.scenery["attic door"] = room.scenery["door"]
+        else:
+            print("The key has done all it can. What remains is older than locksmithing: the room is waiting to hear you ask entry in the language it prefers.")
+    else:
+        print("You need a specific key for this door.")
+
+def awaken_witness_jar(gs):
+    gs.witness_awakened = True
+    gs.discovered_witness = True
+    print(state_text(
+        gs,
+        "You press the bloodied bandage to the glass. The jar clouds instantly, then clears from within.",
+        "You press the bloodied bandage to the glass. The jar answers as if it has been waiting for exactly this proof.",
+        "You press the bloodied bandage to the glass. The response is weaker than it would once have been, but still immediate enough to make your stomach turn."
+    ))
+    print("A pale face forms just beneath the surface and mouths words directly into your thoughts:")
+    print("'When the teapot is fed, Amon opens. When the teapot is choked, cast hearth ash across the steam or 'THEM' will keep drinking from the air.'")
+
+def smother_teapot_with_ash(gs, room):
+    if not gs.trance:
+        print("The ash scatters across the steam and falls dull through it. Nothing in the room has opened enough for the gesture to matter yet.")
+        print("Grandma watches the failed attempt with mild disappointment. 'Tea first, dear,' she says. 'Then symbols learn to bite.'")
+        return
+    gs.teapot_smothered = True
+    gs.ritual_branch = "ash"
+    gs.branch_scene_seen = False
+    gs.weakened_trance = True
+    room.desc = "Grandma remains in the rocking chair, with the open door south to the landing behind you. The violet steam now hangs in bruised, broken ribbons above the teapot, and the room feels offended rather than welcoming."
+    room.trance_desc = "'THEM' no longer wait in reverence. The open door south to the landing remains visible but distant, while their shapes pull at the dim air in restless, wounded knots around the teapot's darkened mouth."
+    if gs.attic_choice is None:
+        gs.attic_choice = "disrupt"
+    print("You cast the hearth ash across the teapot. The violet steam stutters, darkens, and sinks low.")
+    print("For the first time, Grandma sounds uncertain. 'Who taught you that?' she whispers.")
+    print("Something inside your head unlatches. The house does not disappear, but its voice retreats from your bloodstream to the far side of the walls.")
+
 def reveal_hearth_ash(gs, room, intro=None):
     gs.ash_revealed = True
     room.items["hearth ash"] = [
@@ -786,6 +920,11 @@ KNOCKER_TARGETS = frozenset((
     "gargoyle jaw", "gargoyle's jaw", "gargoyles jaw"
 ))
 FRONT_KNOCK_TARGETS = FRONT_DOOR_TARGETS | KNOCKER_TARGETS | frozenset((None,))
+
+IN_TARGETS = frozenset(("in", "inside", "house", "foyer", "door", "room", "through door", "inside house"))
+OUT_TARGETS = frozenset(("out", "outside", "back", "away", "outside house"))
+STAIR_TARGETS = frozenset(("stair", "stairs", "staircase", "steps", "narrow stair", "attic stair", "grand staircase"))
+TAKE_ALL_TARGETS = frozenset(("all", "everything", "all items", "items"))
 
 KEY_TARGETS = frozenset((
     "key", "brass key", "small key", "small brass key",
@@ -1005,12 +1144,40 @@ OBJECT_ALIASES = {
     "cluttered workbench": "workbench",
     "cracked window": "window",
     "warped shed door": "warped door",
+    "up stairs": "up",
+    "up staircase": "up",
+    "down stairs": "down",
+    "down staircase": "down",
+    "grand staircase": "staircase",
+    "front hall": "foyer",
+    "hall": "foyer",
+    "mother's room": "living room",
+    "mothers room": "living room",
+    "grandma's room": "attic",
+    "grandmas room": "attic",
+    "my bedroom": "bedroom",
+    "my room": "bedroom",
+    "your room": "bedroom",
+    "childhood bedroom": "bedroom",
+    "childhood room": "bedroom",
+    "old bedroom": "bedroom",
+    "old room": "bedroom",
 }
 
 def normalize_object_name(name):
     if not name:
         return name
     return OBJECT_ALIASES.get(name.strip().lower(), name)
+
+def normalize_command_object(verb, name):
+    name = normalize_object_name(name)
+    if not name:
+        return name
+    if verb == "take":
+        for prefix in ("up ", "off "):
+            if name.startswith(prefix):
+                return normalize_object_name(name[len(prefix):])
+    return name
 
 OPEN_FRONT_DOOR_DESC = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied above the narrow AMON nameplate."
 
@@ -1047,6 +1214,8 @@ def visible_item_for_read(gs, room, obj):
         return gs.current_room == "Cemetery"
     if obj in PORTRAIT_TARGETS:
         return gs.current_room == "Upstairs Hallway"
+    if obj in CARVING_TARGETS:
+        return gs.current_room == "Upstairs Hallway" and gs.moved_portraits
     return True
 
 DINING_FLOOR_TARGETS = frozenset((
@@ -1072,6 +1241,13 @@ BEHIND_PAINTING_TARGETS = frozenset((
     "behind ancestor portrait", "behind ancestor portraits",
     "behind painted ancestors", "behind amon ancestors",
     "behind watching faces", "behind painted faces", "behind faces"
+))
+
+CARVING_TARGETS = frozenset((
+    "writing", "carving", "hidden carving", "hidden line", "line",
+    "message", "hidden message", "words", "hidden words",
+    "wall writing", "wall carving", "plaster", "carved text",
+    "text", "inscription", "hidden inscription"
 ))
 
 FIXED_TAKE_RESPONSES = {
@@ -1378,7 +1554,7 @@ class GameSession:
 
     def command_count_key(self, normalized_command):
         verb, obj, prep, indirect_obj = self.parser.parse(normalized_command)
-        obj = normalize_object_name(obj)
+        obj = normalize_command_object(verb, obj)
         indirect_obj = normalize_object_name(indirect_obj)
         if not verb:
             return normalized_command
@@ -1424,7 +1600,7 @@ class GameSession:
         parser = self.parser
         room = gs.rooms[gs.current_room]
         v, obj, prep, i_obj = parser.parse(user_input)
-        obj = normalize_object_name(obj)
+        obj = normalize_command_object(v, obj)
         i_obj = normalize_object_name(i_obj)
 
         if not v:
@@ -1456,24 +1632,34 @@ class GameSession:
 
         # 2. Movement Logic
         elif v == "go":
-            if gs.current_room == "Front Door" and obj == "north" and gs.door_unlocked:
+            movement_direction = resolve_movement_direction(gs, room, obj)
+            if gs.current_room == "Front Door" and (obj == "north" or obj in IN_TARGETS or obj in FRONT_DOOR_TARGETS) and gs.door_unlocked:
                 enter_front_door(gs)
-            elif obj in room.exits:
-                destination = room.exits[obj]
-                reclaim_attic_items_if_leaving(gs, room, destination)
-                gs.current_room = destination
-                print(state_text(
-                    gs,
-                    f"You head {obj}...",
-                    f"You head {obj}, and the house seems to adjust around your choice before you arrive.",
-                    f"You head {obj}. The house yields the path, though reluctantly."
-                ))
-            elif obj == "north" and gs.current_room == "Front Door" and not gs.door_unlocked:
+            elif gs.current_room == "Front Door" and (obj == "north" or obj in IN_TARGETS or obj in FRONT_DOOR_TARGETS) and not gs.door_unlocked:
                 print("The door is locked from within. The brass gargoyle knocker waits at eye level, polished by visitors who knew better than to shove.")
+            elif gs.current_room == "Attic Landing" and (obj == "north" or obj in IN_TARGETS or obj in ATTIC_DOOR_TARGETS):
+                if gs.attic_unlocked:
+                    gs.current_room = "Attic"
+                    print(state_text(
+                        gs,
+                        "You step through the open attic doorway.",
+                        "You step into the attic, and 'THEM' make room without moving.",
+                        "You step into the attic. The room admits you, but its welcome has frayed."
+                    ))
+                elif gs.attic_primed:
+                    print("The attic door has heard the key. Now it waits for the courtesy carved into the house: knock, and be named.")
+                else:
+                    print("The attic door is locked. Grandma is busy with the rite.")
+            elif movement_direction:
+                move_player(gs, room, movement_direction)
+            elif gs.current_room == "Upstairs Hallway" and obj in ATTIC_DOOR_TARGETS:
+                print("The attic door waits up the narrow stair, on the landing. Climb the stair first.")
             elif obj == "north" and gs.current_room == "Attic Landing" and not gs.attic_unlocked:
                 print("The attic door is locked. Grandma is busy with the rite.")
             elif obj == "up" and gs.current_room == "Attic Landing":
                 print("You are already at the attic landing. The attic door is north.")
+            elif known_room_name(gs, obj):
+                print(f"{room_display_for_target(gs, obj)} is not directly reachable from here. Follow one of the visible exits first.")
             else:
                 print(state_text(
                     gs,
@@ -1491,21 +1677,20 @@ class GameSession:
                     "You step out of the shed. The tools' humming follows you for a few breaths, then sinks back into the walls.",
                     "You step out of the shed. The garden air feels thin and cold, but it is easier to breathe than oil and rust."
                 ))
-            elif len(room.exits) == 1:
-                direction, destination = next(iter(room.exits.items()))
-                gs.current_room = destination
+            elif len(room.exits) == 1 or len(set(room.exits.values())) == 1:
+                direction = next(iter(room.exits))
+                move_player(gs, room, direction)
+            else:
                 print(state_text(
                     gs,
-                    f"You leave by the only way out, heading {direction}.",
-                    f"You leave by the only way out, heading {direction}, while the room seems to consider whether to keep you.",
-                    f"You leave by the only way out, heading {direction}."
+                    "There is more than one way out from here. Choose a direction.",
+                    "There is more than one way out from here, and in trance each one seems to be listening for your preference.",
+                    "There is more than one way out from here. The house no longer hides that from you."
                 ))
-            else:
-                print("There is more than one way out from here. Choose a direction.")
 
         # 3. Examination Logic
         elif v == "examine":
-            if obj in ROOM_LOOK_TARGETS:
+            if obj in ROOM_LOOK_TARGETS or is_current_room_reference(gs, room, obj):
                 print_room_inspection(gs)
                 self.suppress_room_display = True
             elif obj == "keyhole" and gs.current_room == "Attic Landing":
@@ -1664,6 +1849,9 @@ class GameSession:
                 ))
             elif gs.current_room == "Upstairs Hallway" and obj in PORTRAIT_TARGETS:
                 print(portrait_lore_text(gs))
+            elif gs.current_room == "Upstairs Hallway" and obj in CARVING_TARGETS and gs.moved_portraits:
+                print("Behind the shifted portrait, the hidden carving remains exposed.")
+                print("The carving reads: 'Let invited blood knock, and the listening room shall answer.'")
             elif obj in room.scenery:
                 print(room.scenery[obj])
             else:
@@ -1685,6 +1873,8 @@ class GameSession:
                 print(trance_text)
             elif obj in PORTRAIT_TARGETS and gs.current_room == "Upstairs Hallway":
                 print(portrait_lore_text(gs))
+            elif obj in CARVING_TARGETS and gs.current_room == "Upstairs Hallway":
+                print("The hidden carving reads: 'Let invited blood knock, and the listening room shall answer.'")
             elif obj in LEDGER_TARGETS:
                 print("The ledger is mostly household accounting in a severe hand: coal, candles, food, medicine.")
                 print("A few entries are marked more heavily than the rest, especially on Fridays, but nothing here openly explains why.")
@@ -1736,7 +1926,7 @@ class GameSession:
 
         # 4. Interaction Logic
         elif v == "search":
-            if obj in ROOM_LOOK_TARGETS:
+            if obj in ROOM_LOOK_TARGETS or is_current_room_reference(gs, room, obj):
                 print_room(gs, include_entry=False)
                 self.suppress_room_display = True
             elif gs.current_room == "Kitchen" and obj in KITCHEN_FIRE_TARGETS:
@@ -1772,6 +1962,9 @@ class GameSession:
                         print("The carving reads: 'Let invited blood knock, and the listening room shall answer.'")
                 else:
                     print("There are no paintings here to search behind.")
+            elif obj in CARVING_TARGETS and gs.current_room == "Upstairs Hallway" and gs.moved_portraits:
+                print("Behind the shifted portrait, the hidden carving remains exposed.")
+                print("The carving reads: 'Let invited blood knock, and the listening room shall answer.'")
             else:
                 trance_text = trance_search_text(gs) if gs.trance else None
                 if trance_text:
@@ -1886,7 +2079,21 @@ class GameSession:
 
         elif v == "ask":
             if obj in GRANDMA_TARGETS and gs.current_room == "Attic":
-                if i_obj in GUEST_TOPIC_TARGETS:
+                if not i_obj:
+                    if gs.attic_choice is None:
+                        gs.attic_choice = "question"
+                        print("You question Grandma before taking the place she has arranged for you.")
+                        print("'Too far?' she says, though you never gave the words aloud. 'Every family reaches farther than its bones. That is how a house survives its dead.'")
+                        print("The teacups fall silent around the table. The room has not punished the question yet, but it has written your doubt into the evening.")
+                    elif gs.ritual_branch == "ash":
+                        print("Grandma gives you a look sharpened by the wounded room. 'You have already answered with ash,' she says. 'Questions now are decoration.'")
+                    elif gs.ritual_branch == "obedience":
+                        print("Grandma smiles as if your question has arrived too late to matter. 'You may ask from inside the cup now,' she says.")
+                    elif in_full_trance(gs):
+                        print("Grandma listens to the shape of your doubt. 'Good,' she says. 'Questions make better handles than fear.'")
+                    else:
+                        print("Grandma does not turn. 'Ask plainly, dear. A house this old dislikes mumbling almost as much as disobedience.'")
+                elif i_obj in GUEST_TOPIC_TARGETS:
                     if gs.ritual_branch == "ash":
                         print("Grandma's answer is almost drowned by the room itself. 'Ask 'THEM' now,' she says. 'You have already insulted their teacup, so perhaps they will favor honesty over courtesy.'")
                     elif gs.ritual_branch == "obedience":
@@ -2039,7 +2246,10 @@ class GameSession:
                 else:
                     print("It refuses to budge. No handle gives way under your hand; only the brass gargoyle knocker seems meant to move.")
             elif gs.current_room == "Attic Landing" and obj in ATTIC_DOOR_TARGETS:
-                if gs.attic_unlocked:
+                key_item = resolve_item(gs, i_obj, "inventory") if i_obj else None
+                if key_item == "brass key" and not gs.attic_unlocked:
+                    unlock_attic_door(gs, room)
+                elif gs.attic_unlocked:
                     print("The attic door already stands open before you.")
                 elif gs.attic_primed:
                     print("The first resistance is gone. Beyond the wood, the room is listening now, holding its breath for the courtesy it believes it is owed.")
@@ -2115,6 +2325,10 @@ class GameSession:
         elif v == "move":
             if obj == "rocking chair" and gs.current_room == "Attic":
                 print("Before your hands can truly settle on the wood, the chair gives a warning creak and rocks back by itself, as though your touch requires permission.")
+            elif obj in BANDAGE_TARGETS and gs.current_room == "Living Room":
+                take_mother_bandage(gs, room)
+            elif gs.current_room == "Attic Landing" and obj in KEY_TARGETS and i_obj in ATTIC_DOOR_TARGETS:
+                unlock_attic_door(gs, room)
             elif obj in PORTRAIT_TARGETS and gs.current_room == "Upstairs Hallway":
                 if gs.moved_portraits:
                     print("One portrait is already shifted aside, leaving the hidden carving visible behind it.")
@@ -2169,23 +2383,7 @@ class GameSession:
         
         elif v == "unlock":
             if gs.current_room == "Attic Landing" and obj in ATTIC_DOOR_TARGETS:
-                item_id = resolve_item(gs, "key", "inventory")
-                if item_id == "brass key":
-                    if gs.attic_unlocked:
-                        print("It's already unlocked.")
-                    elif not gs.moved_portraits:
-                        print("The key yields a little, then binds as though another hand has taken hold of it from within.")
-                        print("Somewhere along the hallway wall, wood taps once against plaster. The watching faces seem to know why you are being refused.")
-                    elif not gs.attic_primed:
-                        print("\nThe key turns with a grudging click, then stops at a second catch.")
-                        print("A breath escapes the seam of the door, carrying a whisper soft as dust across a coffin lid: 'Knock, and be named.'")
-                        gs.attic_primed = True
-                        room.scenery["door"] = "The lock has given way once, but the room beyond still insists on being asked, as if a key can open the metal but not the will behind it."
-                        room.scenery["attic door"] = room.scenery["door"]
-                    else:
-                        print("The key has done all it can. What remains is older than locksmithing: the room is waiting to hear you ask entry in the language it prefers.")
-                else:
-                    print("You need a specific key for this door.")
+                unlock_attic_door(gs, room)
             elif gs.current_room == "Upstairs Hallway" and obj in ATTIC_DOOR_TARGETS:
                 print("The attic door is up the narrow stair. You will need to stand on the landing to work the lock.")
             else:
@@ -2198,20 +2396,8 @@ class GameSession:
 
         elif v == "take":
             if gs.current_room == "Living Room" and obj in BANDAGE_TARGETS and not gs.bandage_taken:
-                gs.bandage_taken = True
-                gs.inventory["bloodied bandage"] = [
-                    "bandage", "white bandage", "bloodied bandage",
-                    "cloth", "white cloth", "bloodied cloth",
-                    "mother's bandage", "mothers bandage"
-                ]
-                room.scenery["bandage"] = "The bandage is gone from Mother's hand. A dark red stain remains on the exposed skin beneath."
-                print(state_text(
-                    gs,
-                    "You carefully loosen the bandage from Mother's hand. It comes away warm and spotted through with old blood.",
-                    "You carefully loosen the bandage from Mother's hand. In trance it feels less like cloth than a kept promise, still warm with the ritual that wanted to claim it.",
-                    "You carefully loosen the bandage from Mother's hand. It feels lighter than before, but more accusing, as if now it belongs to a choice instead of a spell."
-                ))
-            elif obj == "all":
+                take_mother_bandage(gs, room)
+            elif obj in TAKE_ALL_TARGETS:
                 if room.items:
                     taken_items = list(room.items.keys())
                     for item_id in taken_items:
@@ -2266,45 +2452,33 @@ class GameSession:
         elif v == "use":
             held_item = resolve_item(gs, obj, "inventory") if obj else None
             target_name = i_obj or prep
+            target_item = resolve_item(gs, target_name, "inventory") if target_name else None
 
             if gs.current_room == "Front Door" and not held_item and (obj in KNOCKER_TARGETS or obj in FRONT_DOOR_TARGETS):
                 unlock_front_door(gs, room)
+            elif held_item == "brass key" and target_name in ATTIC_DOOR_TARGETS and gs.current_room == "Attic Landing":
+                unlock_attic_door(gs, room)
+            elif held_item == "brass key" and target_name in ATTIC_DOOR_TARGETS and gs.current_room == "Upstairs Hallway":
+                print("The attic door is up the narrow stair. You will need to stand on the landing to work the lock.")
+            elif target_item == "brass key" and obj in ATTIC_DOOR_TARGETS and gs.current_room == "Attic Landing":
+                unlock_attic_door(gs, room)
             elif held_item and is_weapon(held_item) and target_name in CHARACTER_TARGETS:
                 handle_attack(gs, room, target_name, held_item)
                 if gs.game_over:
                     self.finished = True
                     return False
             elif held_item == "bloodied bandage" and target_name in JAR_TARGETS and gs.current_room == "Cellar":
-                gs.witness_awakened = True
-                gs.discovered_witness = True
-                print(state_text(
-                    gs,
-                    "You press the bloodied bandage to the glass. The jar clouds instantly, then clears from within.",
-                    "You press the bloodied bandage to the glass. The jar answers as if it has been waiting for exactly this proof.",
-                    "You press the bloodied bandage to the glass. The response is weaker than it would once have been, but still immediate enough to make your stomach turn."
-                ))
-                print("A pale face forms just beneath the surface and mouths words directly into your thoughts:")
-                print("'When the teapot is fed, Amon opens. When the teapot is choked, cast hearth ash across the steam or 'THEM' will keep drinking from the air.'")
+                awaken_witness_jar(gs)
+            elif target_item == "bloodied bandage" and obj in JAR_TARGETS and gs.current_room == "Cellar":
+                awaken_witness_jar(gs)
             elif held_item and target_name in JAR_TARGETS and gs.current_room == "Cellar":
                 handle_attack(gs, room, target_name, held_item)
             elif is_axe_sharpening_pair(held_item, target_name):
                 sharpen_axe(gs)
             elif held_item == "hearth ash" and target_name in TEAPOT_ACTION_TARGETS and gs.current_room == "Attic":
-                if not gs.trance:
-                    print("The ash scatters across the steam and falls dull through it. Nothing in the room has opened enough for the gesture to matter yet.")
-                    print("Grandma watches the failed attempt with mild disappointment. 'Tea first, dear,' she says. 'Then symbols learn to bite.'")
-                    return True
-                gs.teapot_smothered = True
-                gs.ritual_branch = "ash"
-                gs.branch_scene_seen = False
-                gs.weakened_trance = True
-                room.desc = "Grandma remains in the rocking chair, with the open door south to the landing behind you. The violet steam now hangs in bruised, broken ribbons above the teapot, and the room feels offended rather than welcoming."
-                room.trance_desc = "'THEM' no longer wait in reverence. The open door south to the landing remains visible but distant, while their shapes pull at the dim air in restless, wounded knots around the teapot's darkened mouth."
-                if gs.attic_choice is None:
-                    gs.attic_choice = "disrupt"
-                print("You cast the hearth ash across the teapot. The violet steam stutters, darkens, and sinks low.")
-                print("For the first time, Grandma sounds uncertain. 'Who taught you that?' she whispers.")
-                print("Something inside your head unlatches. The house does not disappear, but its voice retreats from your bloodstream to the far side of the walls.")
+                smother_teapot_with_ash(gs, room)
+            elif target_item == "hearth ash" and obj in TEAPOT_ACTION_TARGETS and gs.current_room == "Attic":
+                smother_teapot_with_ash(gs, room)
             elif held_item == "hearth ash" and target_name in TEAPOT_ACTION_TARGETS:
                 print("The ash stays cold in your hand. The teapot's steam is anchored upstairs; whatever this can do, it must happen in Grandma's attic.")
             elif held_item == "hearth ash" and gs.current_room == "Attic":

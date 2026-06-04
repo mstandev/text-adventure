@@ -3,11 +3,11 @@
 class AdvancedParser:
     def __init__(self):
         self.synonyms = {
-            "go": ("walk", "run", "north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"),
-            "take": ("get", "grab", "pick", "collect", "take"),
-            "drop": ("drop", "leave", "discard"),
+            "go": ("walk", "run", "climb", "north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"),
+            "take": ("get", "grab", "pick", "collect", "remove", "take"),
+            "drop": ("drop", "discard"),
             "examine": ("look", "check", "inspect", "examine", "peek", "x"),
-            "use": ("apply", "put", "place", "give", "cast", "scatter", "use"),
+            "use": ("apply", "put", "place", "give", "cast", "scatter", "throw", "sprinkle", "wrap", "tie", "press", "touch", "smother", "cover", "use"),
             "inventory": ("i", "items", "bag", "inventory"),
             "unlock": ("unlock",),
             "drink": ("sip", "gulp", "consume", "drink"),
@@ -16,11 +16,11 @@ class AdvancedParser:
             "search": ("search", "feel", "probe"),
             "listen": ("listen", "hear"),
             "talk": ("talk", "speak"),
-            "ask": ("ask",),
+            "ask": ("ask", "question"),
             "show": ("show",),
             "read": ("read",),
             "smell": ("smell", "sniff"),
-            "exit": ("exit",),
+            "exit": ("exit", "leave"),
             "open": ("open",),
             "enter": ("enter",),
             "close": ("close", "shut"),
@@ -40,9 +40,10 @@ class AdvancedParser:
         self.direction_map = {
             "n": "north", "north": "north", "s": "south", "south": "south",
             "e": "east", "east": "east", "w": "west", "west": "west",
-            "u": "up", "up": "up", "d": "down", "down": "down"
+            "u": "up", "up": "up", "upstairs": "up",
+            "d": "down", "down": "down", "downstairs": "down"
         }
-        self.prepositions = frozenset(("with", "using", "on", "in", "at", "to", "about", "into", "across", "over", "from"))
+        self.prepositions = frozenset(("with", "using", "on", "in", "inside", "at", "to", "about", "into", "through", "across", "over", "around", "off", "from"))
         self.ignored = frozenset(("the", "a", "an", "some"))
 
     def parse(self, user_input):
@@ -62,6 +63,8 @@ class AdvancedParser:
         if prep and not obj and i_obj:
             obj = i_obj
             i_obj = None
+        elif prep and not obj and not i_obj:
+            obj = prep
         if not prep and len(tokens) > 1:
             obj = " ".join(tokens[1:])
         if verb == "go" and obj in self.direction_map:
