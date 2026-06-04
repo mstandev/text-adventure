@@ -33,21 +33,22 @@ def resolve_item(gs, name, context="room"):
 
 def parse_show_command(gs, obj, i_obj):
     target_names = ("mother", "mom", "grandma", "grandmother")
-    shown_item = resolve_item(gs, obj, "inventory") if obj else None
-    target = i_obj
-    requested_item = obj
+    normalized_obj = normalize_object_name(obj)
+    shown_item = resolve_item(gs, normalized_obj, "inventory") if normalized_obj else None
+    target = normalize_object_name(i_obj)
+    requested_item = normalized_obj
 
-    if shown_item or target or not obj:
+    if shown_item or target or not normalized_obj:
         return shown_item, target, requested_item
 
-    words = obj.split()
+    words = normalized_obj.split()
     if words and words[0] in target_names:
         target = words[0]
-        requested_item = " ".join(words[1:])
+        requested_item = normalize_object_name(" ".join(words[1:]))
         shown_item = resolve_item(gs, requested_item, "inventory") if requested_item else None
     elif words and words[-1] in target_names:
         target = words[-1]
-        requested_item = " ".join(words[:-1])
+        requested_item = normalize_object_name(" ".join(words[:-1]))
         shown_item = resolve_item(gs, requested_item, "inventory") if requested_item else None
 
     return shown_item, target, requested_item
@@ -89,8 +90,33 @@ def print_room(gs, include_entry=True):
         print(f"Items here: {', '.join(room.items)}")
 
 def print_help():
-    print("Commands: go, look, examine, read, smell, take, drop, inventory, search, listen, talk, ask, show, open, close, move, knock, unlock, use, sharpen, pour, light, drink, attack, exit, restart, quit")
-    print("Examples: north, examine door, take item, read note, ask person about topic, use item on target, sharpen axe, attack target with item")
+    print("You can try commands like these:")
+    print("")
+    print("Movement:")
+    print("  north, south, east, west, up, down")
+    print("  n, s, e, w, u, d")
+    print("  enter house, enter attic, exit")
+    print("")
+    print("Looking around:")
+    print("  inspect, examine, inspect door, examine keyhole")
+    print("  search room, search table, look behind paintings")
+    print("  read ledger, listen, smell hearth")
+    print("")
+    print("Items:")
+    print("  take key, get teacup, get all, drop spoon")
+    print("  inventory, i")
+    print("")
+    print("Using things:")
+    print("  knock door, unlock attic door")
+    print("  use item on target")
+    print("  show photo to mother")
+    print("  ask grandma about tea")
+    print("  sharpen axe, drink tea, pour tea")
+    print("")
+    print("Game:")
+    print("  restart, quit")
+    print("")
+    print("The house understands several similar phrasings, so natural commands are worth trying.")
 
 def in_full_trance(gs):
     return gs.trance and not gs.weakened_trance
@@ -398,7 +424,10 @@ def sharpen_axe(gs):
         print("You have the axe, but nothing suitable to sharpen it with.")
     else:
         gs.inventory.pop("heavy axe")
-        gs.inventory["sharp axe"] = ["axe", "weapon", "sharp axe", "sharpened axe"]
+        gs.inventory["sharp axe"] = [
+            "axe", "weapon", "sharp axe", "sharpened axe",
+            "sharp heavy axe", "sharpened heavy axe"
+        ]
         print("You work the axe blade against the sharpening stone until the dull edge wakes into a cold gleam.")
         print("The heavy axe is now a sharp axe.")
 
@@ -603,7 +632,10 @@ def enter_front_door(gs):
 
 def reveal_hearth_ash(gs, room, intro=None):
     gs.ash_revealed = True
-    room.items["hearth ash"] = ["ash", "cinders", "hearth ash"]
+    room.items["hearth ash"] = [
+        "ash", "cinders", "hearth ash", "pale ash",
+        "pale hearth ash", "cold ash", "pale cinders", "hearth cinders"
+    ]
     if intro:
         print(intro)
     print("Beneath the screaming blue flame, you notice a bed of pale hearth ash that has somehow escaped burning.")
@@ -677,39 +709,112 @@ MISSY_TARGETS = frozenset(("missy", "sister"))
 CHARACTER_TARGETS = MOTHER_TARGETS | GRANDMA_TARGETS | MISSY_TARGETS
 
 ROOM_LOOK_TARGETS = frozenset((None, "around", "room", "area", "here", "all", "everything"))
-PHOTO_TARGETS = frozenset(("photo", "photograph", "family photo", "family photograph"))
-LEDGER_TARGETS = frozenset(("ledger", "ritual ledger"))
-INVITATION_TARGETS = frozenset(("card", "invitation", "invitation card"))
-NAMEPLATE_TARGETS = frozenset(("nameplate", "plate", "brass nameplate", "amon nameplate", "amon"))
-GRAVE_TARGETS = frozenset(("grave", "headstone", "headstones"))
-JAR_TARGETS = frozenset(("jar", "sealed jar", "jars", "souls"))
-LABEL_TARGETS = frozenset(("labels", "jar", "jars", "sealed jar"))
+PHOTO_TARGETS = frozenset((
+    "photo", "photograph", "family photo", "family photograph",
+    "face-down photo", "face-down photograph", "face down photo",
+    "face down photograph", "old photo", "old photograph"
+))
+LEDGER_TARGETS = frozenset((
+    "ledger", "ritual ledger", "ritual book", "old ledger",
+    "household ledger", "family ledger", "ledger book"
+))
+INVITATION_TARGETS = frozenset((
+    "card", "invitation", "invitation card", "formal invitation",
+    "white card", "old invitation", "expected card"
+))
+NAMEPLATE_TARGETS = frozenset((
+    "nameplate", "plate", "brass nameplate", "amon nameplate",
+    "narrow nameplate", "narrow brass nameplate", "amon plate", "amon"
+))
+GRAVE_TARGETS = frozenset((
+    "grave", "old grave", "sunken grave", "headstone", "old headstone",
+    "crooked headstone", "headstones", "crooked headstones", "marker", "grave marker"
+))
+JAR_TARGETS = frozenset((
+    "jar", "sealed jar", "glass jar", "sealed glass jar",
+    "unlabelled jar", "unlabelled jars", "unlabeled jar", "unlabeled jars",
+    "thick jar", "thick glass jar", "jars", "souls", "soul jar", "witness jar"
+))
+LABEL_TARGETS = frozenset((
+    "labels", "label", "jar label", "jar labels", "peeling label",
+    "peeled label", "sealed jar", "glass jar", "jar", "jars"
+))
 TEAPOT_ITEM = "teapot"
-TEAPOT_ALIASES = ["pot", "tea", "silver teapot"]
-TEAPOT_TARGETS = frozenset(("tea", "pot", TEAPOT_ITEM, "silver teapot"))
-TEAPOT_ACTION_TARGETS = TEAPOT_TARGETS | frozenset(("steam", "violet steam"))
+TEAPOT_ALIASES = [
+    "pot", "tea", "silver teapot", "lidded teapot",
+    "ritual teapot", "grandma's teapot", "grandmas teapot"
+]
+TEAPOT_TARGETS = frozenset((TEAPOT_ITEM, *TEAPOT_ALIASES))
+TEAPOT_ACTION_TARGETS = TEAPOT_TARGETS | frozenset((
+    "steam", "violet steam", "teapot steam", "teapot's steam",
+    "teapots steam", "violet vapor", "violet vapour"
+))
 TEACUP_ITEM = "china teacup"
-TEACUP_ALIASES = ["cup", "teacup", "china cup", "tea cup"]
-CUP_TARGETS = frozenset(("cup", "cups", "teacup", "teacups", "china cup", "china teacup", "china teacups", "tea cup", "tea cups"))
-BANDAGE_TARGETS = frozenset(("bandage", "hand"))
+TEACUP_ALIASES = [
+    "cup", "cups", "teacup", "teacups", "china cup", "china cups",
+    "tea cup", "tea cups", "china tea cup", "china tea cups",
+    "single teacup", "single china teacup", "white teacup",
+    "porcelain cup", "porcelain teacup"
+]
+CUP_TARGETS = frozenset((TEACUP_ITEM, *TEACUP_ALIASES, "china teacups"))
+BANDAGE_TARGETS = frozenset((
+    "bandage", "white bandage", "bloodied bandage",
+    "cloth", "white cloth", "bloodied cloth",
+    "mother's bandage", "mothers bandage",
+    "hand", "mother's hand", "mothers hand", "wrapped hand"
+))
+BANDAGE_TOPIC_TARGETS = BANDAGE_TARGETS | frozenset(("blood", "wound"))
 WITNESS_READ_TARGETS = LEDGER_TARGETS | LABEL_TARGETS
 
-ATTIC_DOOR_TARGETS = frozenset(("door", "attic", "attic door"))
-FRONT_DOOR_TARGETS = frozenset(("door", "front door"))
+GATE_TARGETS = frozenset((
+    "gate", "gates", "iron gate", "iron gates",
+    "rusted gate", "rusted gates", "rusted iron gate", "rusted iron gates"
+))
+ATTIC_DOOR_TARGETS = frozenset((
+    "door", "attic", "attic door", "attic room door",
+    "heavy door", "heavy oak door", "oak door", "north door",
+    "lock", "brass lock", "dull brass lock", "attic lock"
+))
+FRONT_DOOR_TARGETS = frozenset((
+    "door", "front door", "oak door", "heavy door",
+    "heavy oak door", "barred door", "front oak door"
+))
 ATTIC_DOOR_OPTIONAL_TARGETS = ATTIC_DOOR_TARGETS | frozenset((None,))
-FRONT_KNOCK_TARGETS = FRONT_DOOR_TARGETS | frozenset((None, "knocker", "gargoyle"))
+KNOCKER_TARGETS = frozenset((
+    "knocker", "brass knocker", "gargoyle", "brass gargoyle",
+    "gargoyle knocker", "brass gargoyle knocker", "heavy brass knocker",
+    "gargoyle jaw", "gargoyle's jaw", "gargoyles jaw"
+))
+FRONT_KNOCK_TARGETS = FRONT_DOOR_TARGETS | KNOCKER_TARGETS | frozenset((None,))
 
-AXE_TARGETS = frozenset(("axe", "heavy axe", "sharp axe", "sharpened axe"))
-STONE_TARGETS = frozenset(("stone", "sharpening stone"))
+KEY_TARGETS = frozenset((
+    "key", "brass key", "small key", "small brass key",
+    "old key", "old brass key", "attic key", "cold key", "cold brass key"
+))
+AXE_TARGETS = frozenset((
+    "axe", "heavy axe", "kitchen axe", "big axe", "dull axe",
+    "sharp axe", "sharpened axe", "sharp heavy axe", "sharpened heavy axe"
+))
+STONE_TARGETS = frozenset((
+    "stone", "sharpening stone", "whetstone", "whet stone",
+    "flat stone", "oily stone"
+))
 SHARPEN_TARGETS = AXE_TARGETS | STONE_TARGETS
 WEAPON_ITEMS = frozenset(("heavy axe", "sharp axe", "silver spoon", "brass key", "sharpening stone"))
 LIGHT_BLOCKED_ITEMS = WEAPON_ITEMS | frozenset(("grave dirt", "sealed jar", TEAPOT_ITEM, TEACUP_ITEM))
-STUDY_SURFACE_TARGETS = frozenset(("desk", "papers", "bookcase"))
+STUDY_SURFACE_TARGETS = frozenset((
+    "desk", "writing desk", "old writing desk", "drawer", "desk drawer",
+    "crooked drawer", "papers", "loose papers", "paper trail",
+    "bookcase", "bookcases", "tall bookcase", "tall bookcases",
+    "books", "shelves", "family records", "records"
+))
 STUDY_FINDABLE_ITEMS = ("ritual ledger", "invitation card")
 
 PORTRAIT_TARGETS = frozenset((
     "portrait", "portraits", "painting", "paintings", "oil painting",
     "oil paintings", "ancestor painting", "ancestor paintings", "ancestors",
+    "ancestor portrait", "ancestor portraits", "amon ancestors",
+    "painted ancestors", "watching faces", "painted faces",
     "frame", "frames", "picture", "pictures", "painted frame", "painted frames"
 ))
 
@@ -718,13 +823,194 @@ GUEST_TOPIC_TARGETS = frozenset((
     "invisible guest", "invisible guests", "invisible company"
 ))
 
-HEARTH_TARGETS = frozenset(("hearth", "fireplace"))
+HEARTH_TARGETS = frozenset((
+    "hearth", "fireplace", "stone hearth", "cold hearth",
+    "kitchen hearth", "hearthstone", "hearth stone"
+))
 
 FLAME_TARGETS = frozenset((
     "flame", "flames", "blue flame", "blue flames", "fire",
-    "blue fire", "hearth fire", "cold fire"
+    "blue fire", "hearth fire", "cold fire", "cold blue flame",
+    "cold blue fire", "thin blue flame", "hearth flame"
 ))
 KITCHEN_FIRE_TARGETS = HEARTH_TARGETS | FLAME_TARGETS
+
+OBJECT_ALIASES = {
+    "rusted gate": "gate",
+    "rusted gates": "gates",
+    "rusted iron gate": "iron gate",
+    "rusted iron gates": "iron gates",
+    "brass knocker": "knocker",
+    "gargoyle knocker": "knocker",
+    "brass gargoyle": "gargoyle",
+    "brass gargoyle knocker": "knocker",
+    "heavy brass knocker": "knocker",
+    "gargoyle jaw": "knocker",
+    "gargoyle's jaw": "knocker",
+    "gargoyles jaw": "knocker",
+    "narrow nameplate": "nameplate",
+    "narrow brass nameplate": "brass nameplate",
+    "amon plate": "amon nameplate",
+    "blackened silver candelabrum": "candelabrum",
+    "silver candelabrum": "candelabrum",
+    "long table": "table",
+    "walnut table": "table",
+    "long walnut table": "table",
+    "scraped floor": "floor",
+    "scraped floorboards": "floorboards",
+    "scraped boards": "floorboards",
+    "pale scrapes": "floor",
+    "fourth chair": "head chair",
+    "empty chair": "head chair",
+    "empty head chair": "head chair",
+    "swollen sideboard": "sideboard",
+    "dusty sideboard": "sideboard",
+    "face-down photo": "photograph",
+    "face-down photograph": "photograph",
+    "face down photo": "photograph",
+    "face down photograph": "photograph",
+    "old photo": "photograph",
+    "old photograph": "photograph",
+    "writing desk": "desk",
+    "old writing desk": "desk",
+    "crooked drawer": "drawer",
+    "desk drawer": "drawer",
+    "loose papers": "papers",
+    "tall bookcase": "bookcase",
+    "tall bookcases": "bookcase",
+    "bookcases": "bookcase",
+    "family records": "records",
+    "ritual book": "ledger",
+    "old ledger": "ledger",
+    "household ledger": "ledger",
+    "family ledger": "ledger",
+    "ledger book": "ledger",
+    "ritual ledger": "ledger",
+    "formal invitation": "invitation",
+    "invitation card": "invitation",
+    "white card": "card",
+    "old invitation": "invitation",
+    "stone hearth": "hearth",
+    "cold hearth": "hearth",
+    "kitchen hearth": "hearth",
+    "hearthstone": "hearth",
+    "hearth stone": "hearth",
+    "cold blue flame": "blue flame",
+    "thin blue flame": "blue flame",
+    "cold blue fire": "blue fire",
+    "hearth flame": "hearth fire",
+    "scarred worktable": "worktable",
+    "hanging utensils": "utensils",
+    "steep stairwell": "stairwell",
+    "steep stairs": "stairs",
+    "cellar stair": "cellar stairs",
+    "cellar stairwell": "cellar stairs",
+    "painted ancestors": "ancestors",
+    "amon ancestors": "ancestors",
+    "watching faces": "portraits",
+    "painted faces": "portraits",
+    "ancestor portrait": "portrait",
+    "ancestor portraits": "portraits",
+    "ancestor painting": "painting",
+    "ancestor paintings": "paintings",
+    "oil portrait": "portrait",
+    "oil portraits": "portraits",
+    "behind painted ancestors": "behind ancestors",
+    "behind amon ancestors": "behind ancestors",
+    "large keyhole": "keyhole",
+    "ornate keyhole": "keyhole",
+    "large ornate keyhole": "keyhole",
+    "brass lock": "lock",
+    "dull brass lock": "lock",
+    "attic lock": "lock",
+    "half-open door": "door",
+    "single candle": "candle",
+    "guttering candle": "candle",
+    "cold window": "window",
+    "window glass": "window",
+    "small table": "table",
+    "violet steam": "steam",
+    "teapot steam": "steam",
+    "teapot's steam": "steam",
+    "teapots steam": "steam",
+    "sealed glass jar": "sealed jar",
+    "glass jar": "jar",
+    "unlabelled jar": "jar",
+    "unlabelled jars": "jars",
+    "unlabeled jar": "jar",
+    "unlabeled jars": "jars",
+    "thick glass jar": "jar",
+    "soul jar": "jar",
+    "witness jar": "jar",
+    "old grave": "grave",
+    "sunken grave": "grave",
+    "grave marker": "marker",
+    "old marker": "marker",
+    "old headstone": "headstone",
+    "crooked headstone": "headstone",
+    "crooked headstones": "headstones",
+    "loose grave dirt": "grave dirt",
+    "grave soil": "grave dirt",
+    "loose soil": "grave dirt",
+    "disturbed soil": "grave dirt",
+    "cemetery dirt": "grave dirt",
+    "wet dirt": "grave dirt",
+    "wet soil": "grave dirt",
+    "small brass key": "brass key",
+    "old brass key": "brass key",
+    "cold brass key": "brass key",
+    "attic key": "brass key",
+    "kitchen axe": "heavy axe",
+    "big axe": "heavy axe",
+    "dull axe": "heavy axe",
+    "sharp heavy axe": "sharp axe",
+    "sharpened heavy axe": "sharp axe",
+    "whetstone": "sharpening stone",
+    "whet stone": "sharpening stone",
+    "flat stone": "sharpening stone",
+    "oily stone": "sharpening stone",
+    "silver teaspoon": "silver spoon",
+    "tea spoon": "silver spoon",
+    "lidded teapot": "teapot",
+    "ritual teapot": "teapot",
+    "grandma's teapot": "teapot",
+    "grandmas teapot": "teapot",
+    "single teacup": "china teacup",
+    "single china teacup": "china teacup",
+    "white teacup": "china teacup",
+    "china cup": "china teacup",
+    "tea cup": "china teacup",
+    "white china teacup": "china teacup",
+    "porcelain cup": "china teacup",
+    "porcelain teacup": "china teacup",
+    "china tea cup": "china teacup",
+    "pale ash": "hearth ash",
+    "pale hearth ash": "hearth ash",
+    "cold ash": "hearth ash",
+    "pale cinders": "hearth ash",
+    "hearth cinders": "hearth ash",
+    "white bandage": "bandage",
+    "bloodied bandage": "bandage",
+    "white cloth": "bandage",
+    "bloodied cloth": "bandage",
+    "mother's bandage": "bandage",
+    "mothers bandage": "bandage",
+    "mother's hand": "hand",
+    "mothers hand": "hand",
+    "wrapped hand": "hand",
+    "sharp tools": "tools",
+    "hanging tools": "tools",
+    "tools on wall": "tools",
+    "rusted garden blades": "tools",
+    "cluttered workbench": "workbench",
+    "cracked window": "window",
+    "warped shed door": "warped door",
+}
+
+def normalize_object_name(name):
+    if not name:
+        return name
+    return OBJECT_ALIASES.get(name.strip().lower(), name)
 
 OPEN_FRONT_DOOR_DESC = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied above the narrow AMON nameplate."
 
@@ -765,21 +1051,27 @@ def visible_item_for_read(gs, room, obj):
 
 DINING_FLOOR_TARGETS = frozenset((
     "floor", "floorboards", "boards", "under table", "beneath table",
-    "under chair", "beneath chair"
+    "under chair", "beneath chair", "scraped floor", "scraped floorboards",
+    "scraped boards", "pale scrapes", "scrapes"
 ))
 
 DINING_INITIAL_TARGETS = frozenset((
     "initials", "floor initials", "carved initials", "initials carved",
     "initials carved floor", "initials in floor", "initials on floor",
     "carving", "floor carving", "marks", "carved marks", "letters",
-    "carved letters"
+    "carved letters", "tiny initials", "tiny carved initials",
+    "circle of initials", "circle of tiny initials", "carved circle",
+    "family initials"
 ))
 DINING_SEARCH_TARGETS = DINING_FLOOR_TARGETS | DINING_INITIAL_TARGETS
 
 BEHIND_PAINTING_TARGETS = frozenset((
     "behind painting", "behind paintings", "behind portrait", "behind portraits",
     "behind oil paintings", "behind ancestor paintings", "behind ancestors",
-    "behind watching faces", "behind faces"
+    "behind oil painting", "behind oil portrait", "behind oil portraits",
+    "behind ancestor portrait", "behind ancestor portraits",
+    "behind painted ancestors", "behind amon ancestors",
+    "behind watching faces", "behind painted faces", "behind faces"
 ))
 
 FIXED_TAKE_RESPONSES = {
@@ -1086,6 +1378,8 @@ class GameSession:
 
     def command_count_key(self, normalized_command):
         verb, obj, prep, indirect_obj = self.parser.parse(normalized_command)
+        obj = normalize_object_name(obj)
+        indirect_obj = normalize_object_name(indirect_obj)
         if not verb:
             return normalized_command
         if indirect_obj is None:
@@ -1130,6 +1424,8 @@ class GameSession:
         parser = self.parser
         room = gs.rooms[gs.current_room]
         v, obj, prep, i_obj = parser.parse(user_input)
+        obj = normalize_object_name(obj)
+        i_obj = normalize_object_name(i_obj)
 
         if not v:
             return True
@@ -1137,6 +1433,7 @@ class GameSession:
         # 1. Global Commands
         if v == "help":
             print_help()
+            self.suppress_room_display = True
 
         elif v == "quit":
             print("The voices will follow you...")
@@ -1249,7 +1546,7 @@ class GameSession:
                     print("The blue flame has thinned to a nervous thread. It still avoids the pale ash below it.")
                 else:
                     print("The flame is blue and thin, bending without wind. It makes the kitchen shadows look sharpened rather than warmed.")
-            elif gs.current_room == "Your Bedroom" and obj in ("key", "brass key", "brass"):
+            elif gs.current_room == "Your Bedroom" and obj in KEY_TARGETS:
                 if "brass key" in room.items or "brass key" in gs.inventory:
                     print("The brass key is small, old, and colder than the room around it. Its teeth are cut in a strange uneven pattern, like a tiny skyline of broken houses.")
                 else:
@@ -1286,6 +1583,11 @@ class GameSession:
                     print("The bandage is gone from Mother's hand. The exposed stain looks less supernatural now, which somehow makes it harder to look at.")
                 else:
                     print("The bandage has gone ordinary again, but not innocent. Looking at it now feels like seeing a ritual after the chanting stops.")
+            elif gs.current_room == "Living Room" and obj in BANDAGE_TARGETS:
+                if gs.bandage_taken:
+                    print("The bandage is gone from Mother's hand. A dark red stain remains on the exposed skin beneath.")
+                else:
+                    print("The white cloth around Mother's hand is fresh enough to shame the dust around it.")
             elif in_full_trance(gs) and gs.current_room == "Dining Room" and obj in ("chair", "head chair", "table"):
                 print("The head chair is occupied now, if not by weight then by intention. The air bends around it with the patience of someone expected to be served first.")
             elif gs.current_room == "Dining Room" and obj == "sideboard":
@@ -1353,10 +1655,10 @@ class GameSession:
                     print("The heavy oak door stands open now, with the dark foyer waiting north. The AMON nameplate beneath the knocker catches a dull glint.")
                 else:
                     print("The oak door is barred from the inside. The only parts that look handled are the brass gargoyle knocker and the narrow AMON nameplate beneath it.")
-            elif gs.current_room == "Front Gate" and obj in ("gate", "gates", "iron gate", "iron gates"):
+            elif gs.current_room == "Front Gate" and obj in GATE_TARGETS:
                 print(state_text(
                     gs,
-                    room.scenery[obj],
+                    room.scenery.get(obj, room.scenery["gate"]),
                     "In trance, the iron gate is not open so much as holding the path apart. Its bars have become long knuckled fingers, rust flaking from them like dried blood. North, the house pulls with the patience of a mouth about to speak; south, the cemetery breathes back.",
                     "The iron gate has mostly returned to metal, though the bars still seem too much like fingers when seen from the corner of your eye."
                 ))
@@ -1661,7 +1963,7 @@ class GameSession:
                         "Mother's answer drifts in as if the room resents giving it up: 'She hides where Grandma never sits.' The words seem costly to her.",
                         "Mother's lips tremble. 'She hid from the house as much as from Grandma,' she whispers. 'Maybe that saved something.'"
                     ))
-                elif i_obj in ("bandage", "blood", "hand"):
+                elif i_obj in BANDAGE_TOPIC_TARGETS:
                     gs.spoke_with_mother = True
                     print(state_text(
                         gs,
@@ -1731,7 +2033,7 @@ class GameSession:
                 print("You have nothing like that to show.")
 
         elif v == "open":
-            if gs.current_room == "Front Door" and obj == "door":
+            if gs.current_room == "Front Door" and obj in FRONT_DOOR_TARGETS:
                 if gs.door_unlocked:
                     print("The door is already open enough to pass through.")
                 else:
@@ -1743,7 +2045,7 @@ class GameSession:
                     print("The first resistance is gone. Beyond the wood, the room is listening now, holding its breath for the courtesy it believes it is owed.")
                 else:
                     print("The attic door stands motionless, but not asleep. The keyhole watches like an unblinking eye, and the wood feels older than the house around it.")
-            elif gs.current_room == "Upstairs Hallway" and obj in ("attic", "attic door"):
+            elif gs.current_room == "Upstairs Hallway" and obj in ATTIC_DOOR_TARGETS:
                 print("The attic door waits up the narrow stair, on the small landing beneath the roofline.")
             elif obj in JAR_TARGETS and gs.current_room == "Cellar":
                 print("You think better of opening that here.")
@@ -1763,7 +2065,7 @@ class GameSession:
                 ))
 
         elif v == "enter":
-            if gs.current_room == "Front Door" and obj in (None, "house", "door", "front door", "foyer"):
+            if gs.current_room == "Front Door" and (obj in (None, "house", "foyer") or obj in FRONT_DOOR_TARGETS):
                 if gs.door_unlocked:
                     enter_front_door(gs)
                 else:
@@ -1776,7 +2078,7 @@ class GameSession:
                     "You climb the narrow stair, and each step seems to wait until your foot commits before becoming solid.",
                     "You climb the narrow stair to the attic landing. The house lets the distance stay ordinary for once."
                 ))
-            elif gs.current_room == "Attic Landing" and obj in (None, "attic", "door", "attic door", "room"):
+            elif gs.current_room == "Attic Landing" and (obj in (None, "room") or obj in ATTIC_DOOR_TARGETS):
                 if gs.attic_unlocked:
                     gs.current_room = "Attic"
                     print(state_text(
@@ -1798,7 +2100,7 @@ class GameSession:
                 ))
 
         elif v == "close":
-            if gs.current_room == "Front Door" and obj == "door" and gs.door_unlocked:
+            if gs.current_room == "Front Door" and obj in FRONT_DOOR_TARGETS and gs.door_unlocked:
                 print("You pull the door until it nearly shuts, but the house seems to want it ajar.")
             elif gs.current_room == "Attic Landing" and obj in ATTIC_DOOR_TARGETS and gs.attic_unlocked:
                 print("You start to pull the attic door closed, but the laughter beyond it makes you stop.")
@@ -1897,7 +2199,11 @@ class GameSession:
         elif v == "take":
             if gs.current_room == "Living Room" and obj in BANDAGE_TARGETS and not gs.bandage_taken:
                 gs.bandage_taken = True
-                gs.inventory["bloodied bandage"] = ["bandage", "cloth", "bloodied bandage"]
+                gs.inventory["bloodied bandage"] = [
+                    "bandage", "white bandage", "bloodied bandage",
+                    "cloth", "white cloth", "bloodied cloth",
+                    "mother's bandage", "mothers bandage"
+                ]
                 room.scenery["bandage"] = "The bandage is gone from Mother's hand. A dark red stain remains on the exposed skin beneath."
                 print(state_text(
                     gs,
@@ -1961,7 +2267,7 @@ class GameSession:
             held_item = resolve_item(gs, obj, "inventory") if obj else None
             target_name = i_obj or prep
 
-            if gs.current_room == "Front Door" and not held_item and obj in ("knocker", "gargoyle", "door", "front door"):
+            if gs.current_room == "Front Door" and not held_item and (obj in KNOCKER_TARGETS or obj in FRONT_DOOR_TARGETS):
                 unlock_front_door(gs, room)
             elif held_item and is_weapon(held_item) and target_name in CHARACTER_TARGETS:
                 handle_attack(gs, room, target_name, held_item)
@@ -2083,7 +2389,7 @@ class GameSession:
             item_id = resolve_any_item(gs, obj) if obj else None
             if item_id in LIGHT_BLOCKED_ITEMS:
                 print(f"The {item_id} is not something you can light.")
-            elif obj in ("hearth", "fireplace") and gs.current_room == "Kitchen":
+            elif obj in KITCHEN_FIRE_TARGETS and gs.current_room == "Kitchen":
                 print("The blue flame is already alive, thin and watchful.")
             elif obj in ("candle", "lamp"):
                 print("You have no flame to offer it yet.")
