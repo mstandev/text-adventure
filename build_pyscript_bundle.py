@@ -154,7 +154,7 @@ def build_html():
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>House of Amon - PyScript</title>
     <link rel="stylesheet" href="https://pyscript.net/releases/2026.3.1/core.css" />
-    <link rel="stylesheet" href="./web.css" />
+    <link rel="stylesheet" href="./web.css?v=20260605-width-1024" />
     <script type="module" src="https://pyscript.net/releases/2026.3.1/core.js"></script>
   </head>
   <body>
