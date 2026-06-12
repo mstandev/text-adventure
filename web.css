@@ -246,16 +246,6 @@ h1 {
   }
 }
 
-@keyframes interactive-rgb-scan {
-  from {
-    background-position: 0% 50%;
-  }
-
-  to {
-    background-position: 200% 50%;
-  }
-}
-
 .output-frame {
   min-height: var(--output-height);
   max-height: var(--output-height);
@@ -279,39 +269,13 @@ h1 {
   font-size: calc(1em + 2px);
 }
 
-.output-frame .item-name,
-.output-frame .interactive-item {
+.output-frame .interactive-object {
   color: var(--interactive);
-  font-weight: 700;
 }
 
 .output-frame .missy-quote {
   color: #fff6d8;
   font-style: italic;
-}
-
-.output-frame .missy-quote .interactive-item {
-  color: var(--interactive);
-}
-
-body[data-interactive-state="danger"] .output-frame .item-name,
-body[data-interactive-state="danger"] .output-frame .interactive-item {
-  color: transparent;
-  background-image: linear-gradient(
-    90deg,
-    #ff4b4b,
-    #ffb238,
-    #fff36b,
-    #4dff7d,
-    #48d8ff,
-    #7674ff,
-    #ff65d8,
-    #ff4b4b
-  );
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  animation: interactive-rgb-scan 1.4s linear infinite;
 }
 
 .output-frame pre.is-typing::after {

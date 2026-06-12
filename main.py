@@ -201,6 +201,19 @@ def room_text(gs, room):
         return attic_room_text(gs, room)
     if gs.current_room == "Study":
         return study_room_text(gs, room)
+    if gs.current_room == "Your Bedroom" and gs.wardrobe_moved:
+        if "brass key" in room.items:
+            hidden_space = "A small brass key lies in the dust behind the shifted wardrobe."
+        elif "brass key" in gs.inventory:
+            hidden_space = "The narrow space behind the shifted wardrobe is empty now, marked only by dust and the memory of the key."
+        else:
+            hidden_space = "The narrow space behind the shifted wardrobe holds only dust and drag marks."
+        return state_text(
+            gs,
+            f"Your childhood bedroom lies west of the upstairs hall, though nothing about it feels like refuge. The hallway waits east through the half-open door. The bed is unmade, the air is stale, and a single candle gutters on the nightstand, casting weak light over old toys and the wardrobe now standing crooked from the corner. {hidden_space}",
+            f"The walls are breathing. East, the hallway calls through the door in borrowed voices, while the window looks out onto a world replaced by swirling purple mist. The toys on the floor have turned their faces away from you, and the shifted wardrobe exposes a thin wounded space in the dust. {hidden_space}",
+            f"Your bedroom is stale, small, and almost ordinary, but the wardrobe remains dragged aside from the corner. East leads back to the hallway. {hidden_space}"
+        )
     if in_weakened_trance(gs):
         return WEAKENED_ROOM_TEXTS.get(gs.current_room, room.desc + " Something of the tea remains in your senses, but the house no longer holds you quite so tightly.")
     return room.trance_desc if gs.trance else room.desc
@@ -317,7 +330,14 @@ def inspect_room_text(gs):
         )
 
     if gs.current_room == "Your Bedroom":
-        key_note = "The brass key catches the candlelight as if it has been waiting to be noticed." if "brass key" in room.items else "The place where the brass key waited is empty now."
+        if "brass key" in room.items:
+            key_note = "Behind the shifted wardrobe, the brass key catches the candlelight as if it has been waiting to be noticed."
+        elif "brass key" in gs.inventory:
+            key_note = "The wardrobe stands crooked from the wall, and the narrow hiding place behind it is empty now."
+        elif gs.wardrobe_moved:
+            key_note = "The wardrobe stands crooked from the wall, exposing a narrow hiding place disturbed in the dust."
+        else:
+            key_note = "The warped wardrobe sits oddly in its corner, its rear legs set in clean grooves through the dust."
         return state_text(
             gs,
             f"You inspect your old bedroom slowly, because childhood has made the room crowded with meanings. East, the half-open door returns to the hallway. The unmade bed slumps beside the nightstand, where a weak candle gutters over old toys, a warped wardrobe, and dust disturbed beneath the bed. {key_note}",
@@ -716,6 +736,31 @@ def take_mother_bandage(gs, room):
     ))
     return True
 
+def reveal_bedroom_key(gs, room):
+    if gs.wardrobe_moved:
+        if "brass key" in room.items:
+            print("The wardrobe already stands crooked from the wall. The brass key remains in the dust behind it.")
+        elif "brass key" in gs.inventory:
+            print("The wardrobe already stands crooked from the wall. The space behind it is empty now; you have what it was hiding.")
+        else:
+            print("The wardrobe already stands crooked from the wall. Nothing else waits behind it.")
+        return
+
+    gs.wardrobe_moved = True
+    if "brass key" not in gs.inventory:
+        room.items["brass key"] = BRASS_KEY_ALIASES[:]
+    room.scenery["wardrobe"] = "The wardrobe has been dragged away from the corner, leaving two clean grooves in the dust and a narrow hiding place exposed behind it."
+    room.scenery["warped wardrobe"] = room.scenery["wardrobe"]
+    room.scenery["behind wardrobe"] = "Behind the wardrobe, the dust has been scraped into two pale grooves."
+    print(state_text(
+        gs,
+        "You brace your shoulder against the warped wardrobe and shove. It complains across the floorboards, opening a narrow space behind it.",
+        "You brace your shoulder against the warped wardrobe. In trance, it moves like something reluctantly waking, dragging two pale wounds through the dust.",
+        "You brace your shoulder against the warped wardrobe and shove. The house lets it move, but not quietly."
+    ))
+    if "brass key" in room.items:
+        print("In the dust behind the wardrobe lies a small brass key.")
+
 def unlock_attic_door(gs, room):
     item_id = resolve_item(gs, "key", "inventory")
     if item_id == "brass key":
@@ -926,9 +971,17 @@ OUT_TARGETS = frozenset(("out", "outside", "back", "away", "outside house"))
 STAIR_TARGETS = frozenset(("stair", "stairs", "staircase", "steps", "narrow stair", "attic stair", "grand staircase"))
 TAKE_ALL_TARGETS = frozenset(("all", "everything", "all items", "items"))
 
-KEY_TARGETS = frozenset((
-    "key", "brass key", "small key", "small brass key",
+BRASS_KEY_ALIASES = [
+    "key", "brass", "small key", "small brass key",
     "old key", "old brass key", "attic key", "cold key", "cold brass key"
+]
+KEY_TARGETS = frozenset(("brass key", *BRASS_KEY_ALIASES))
+WARDROBE_TARGETS = frozenset((
+    "wardrobe", "warped wardrobe", "old wardrobe", "cabinet",
+    "wardrobe door", "wardrobe doors", "closet"
+))
+WARDROBE_LOOK_TARGETS = WARDROBE_TARGETS | frozenset((
+    "behind wardrobe", "behind warped wardrobe", "behind closet"
 ))
 AXE_TARGETS = frozenset((
     "axe", "heavy axe", "kitchen axe", "big axe", "dull axe",
@@ -1137,6 +1190,19 @@ OBJECT_ALIASES = {
     "mother's hand": "hand",
     "mothers hand": "hand",
     "wrapped hand": "hand",
+    "warped wardrobe": "wardrobe",
+    "old wardrobe": "wardrobe",
+    "wardrobe door": "wardrobe",
+    "wardrobe doors": "wardrobe",
+    "wardrobe aside": "wardrobe",
+    "wardrobe away": "wardrobe",
+    "wardrobe back": "wardrobe",
+    "wardrobe over": "wardrobe",
+    "wardrobe out": "wardrobe",
+    "wardrobe out of way": "wardrobe",
+    "closet": "wardrobe",
+    "closet aside": "wardrobe",
+    "closet away": "wardrobe",
     "sharp tools": "tools",
     "hanging tools": "tools",
     "tools on wall": "tools",
@@ -1177,6 +1243,10 @@ def normalize_command_object(verb, name):
         for prefix in ("up ", "off "):
             if name.startswith(prefix):
                 return normalize_object_name(name[len(prefix):])
+    if verb == "move":
+        for suffix in (" aside", " away", " back", " over", " out", " out of way"):
+            if name.endswith(suffix):
+                return normalize_object_name(name[:-len(suffix)])
     return name
 
 OPEN_FRONT_DOOR_DESC = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied above the narrow AMON nameplate."
@@ -1731,6 +1801,16 @@ class GameSession:
                     print("The blue flame has thinned to a nervous thread. It still avoids the pale ash below it.")
                 else:
                     print("The flame is blue and thin, bending without wind. It makes the kitchen shadows look sharpened rather than warmed.")
+            elif gs.current_room == "Your Bedroom" and obj in WARDROBE_LOOK_TARGETS:
+                if gs.wardrobe_moved:
+                    print(room.scenery["wardrobe"])
+                    if "brass key" in room.items:
+                        print("A small brass key lies in the dust behind it.")
+                    elif "brass key" in gs.inventory:
+                        print("The place behind it is empty now; you have already taken what it hid.")
+                else:
+                    print("The wardrobe has warped in its corner, but the grooves beneath its rear legs show it has moved before.")
+                    print("It looks heavy, not fixed. A determined shove might open the space behind it.")
             elif gs.current_room == "Your Bedroom" and obj in KEY_TARGETS:
                 if "brass key" in room.items or "brass key" in gs.inventory:
                     print("The brass key is small, old, and colder than the room around it. Its teeth are cut in a strange uneven pattern, like a tiny skyline of broken houses.")
@@ -1740,6 +1820,10 @@ class GameSession:
                 print("You take in the room piece by piece: the unmade bed, the guttering candle, the nightstand, the old toys, the warped wardrobe, the cold window, and the dust disturbed beneath the bed.")
                 if "brass key" in room.items:
                     print("The brass key catches the candlelight as the only thing here that seems ready to leave.")
+                elif "brass key" in gs.inventory:
+                    print("The wardrobe stands shifted away from the corner, its hiding place empty now.")
+                elif not gs.wardrobe_moved:
+                    print("The wardrobe's rear legs sit in clean grooves through the dust, as if it has been dragged and returned before.")
             elif obj in MISSY_TARGETS:
                 if gs.missy_heard:
                     print("You search for Missy with your eyes, but there is no figure to find.")
@@ -1965,6 +2049,18 @@ class GameSession:
             elif obj in CARVING_TARGETS and gs.current_room == "Upstairs Hallway" and gs.moved_portraits:
                 print("Behind the shifted portrait, the hidden carving remains exposed.")
                 print("The carving reads: 'Let invited blood knock, and the listening room shall answer.'")
+            elif obj in WARDROBE_LOOK_TARGETS and gs.current_room == "Your Bedroom":
+                if gs.wardrobe_moved:
+                    print("You search the narrow space behind the shifted wardrobe.")
+                    if "brass key" in room.items:
+                        print("The brass key lies there in the dust, small and cold-looking.")
+                    elif "brass key" in gs.inventory:
+                        print("Only dust and drag marks remain where the key was hidden.")
+                    else:
+                        print("Only dust and drag marks remain behind it.")
+                else:
+                    print("You search around the wardrobe. Its rear legs sit in clean grooves through the dust, and the corner behind it remains just out of reach.")
+                    print("It looks like it could be moved with enough pressure.")
             else:
                 trance_text = trance_search_text(gs) if gs.trance else None
                 if trance_text:
@@ -2325,6 +2421,8 @@ class GameSession:
         elif v == "move":
             if obj == "rocking chair" and gs.current_room == "Attic":
                 print("Before your hands can truly settle on the wood, the chair gives a warning creak and rocks back by itself, as though your touch requires permission.")
+            elif obj in WARDROBE_TARGETS and gs.current_room == "Your Bedroom":
+                reveal_bedroom_key(gs, room)
             elif obj in BANDAGE_TARGETS and gs.current_room == "Living Room":
                 take_mother_bandage(gs, room)
             elif gs.current_room == "Attic Landing" and obj in KEY_TARGETS and i_obj in ATTIC_DOOR_TARGETS:

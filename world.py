@@ -242,10 +242,6 @@ def setup_amon_house():
         "Your childhood bedroom lies west of the upstairs hall, though nothing about it feels like refuge. The hallway waits east through the half-open door. The bed is unmade, the air is stale, and a single candle gutters on the nightstand, casting weak light over old toys, a warped wardrobe, and the dust beneath the bed.",
         "The walls are breathing. East, the hallway calls through the door in borrowed voices, while the window looks out onto a world replaced by swirling purple mist. The toys on the floor have turned their faces away from you. Somewhere in this room, childhood has hidden what adulthood forgot.",
         {"east": "Upstairs Hallway"},
-        items={"brass key": [
-            "key", "brass", "small key", "small brass key",
-            "old key", "old brass key", "attic key", "cold key", "cold brass key"
-        ]},
         scenery={
             "door": "The half-open door leads east to the upstairs hallway. The light beyond it seems thinner than the light in here.",
             "half-open door": "The half-open door leads east to the upstairs hallway. The light beyond it seems thinner than the light in here.",
@@ -258,8 +254,8 @@ def setup_amon_house():
             "nightstand": "The nightstand is scarred with old rings of wax. The candle has burned down into a leaning white stump.",
             "toys": "The old toys sit where childhood abandoned them. Their painted faces have chipped into expressions that feel almost accusing.",
             "old toys": "The old toys sit where childhood abandoned them. Their painted faces have chipped into expressions that feel almost accusing.",
-            "wardrobe": "The wardrobe has warped in its corner, its doors swollen tight. A dark line shows where they no longer quite meet.",
-            "warped wardrobe": "The wardrobe has warped in its corner, its doors swollen tight. A dark line shows where they no longer quite meet.",
+            "wardrobe": "The wardrobe has warped in its corner, its doors swollen tight. Its rear legs sit in clean grooves through the dust, as if it has been dragged before and put back poorly.",
+            "warped wardrobe": "The wardrobe has warped in its corner, its doors swollen tight. Its rear legs sit in clean grooves through the dust, as if it has been dragged before and put back poorly.",
             "dust": "Dust lies thick beneath the bed, disturbed in one narrow trail as if something small had been dragged out recently.",
             "dust beneath bed": "Dust lies thick beneath the bed, disturbed in one narrow trail as if something small had been dragged out recently.",
             "under bed": "Beneath the bed, the dust has been disturbed. The space is too dark to be welcoming, but not dark enough to hide the recent scrape marks.",

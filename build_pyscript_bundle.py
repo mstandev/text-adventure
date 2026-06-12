@@ -154,7 +154,7 @@ def build_html():
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>House of Amon - PyScript</title>
     <link rel="stylesheet" href="https://pyscript.net/releases/2026.3.1/core.css" />
-    <link rel="stylesheet" href="./web.css?v=20260605-width-1024" />
+    <link rel="stylesheet" href="./web.css?v=20260611-takeable-items" />
     <script type="module" src="https://pyscript.net/releases/2026.3.1/core.js"></script>
   </head>
   <body>
@@ -224,157 +224,90 @@ def build_html():
           return /Missy's (voice|thought)|Missy (whispers|says)|her voice says.*inside your mind/.test(line);
         }}
 
-        // Keep these callouts deliberate: only objects the parser meaningfully handles.
         const interactiveTerms = [
-          "AMON nameplate",
-          "Amon ancestors",
-          "ancestor paintings",
-          "ancestor portraits",
-          "attic door",
-          "back door",
-          "barred door",
-          "blackened silver candelabrum",
-          "blue fire",
-          "blue flame",
-          "brass gargoyle",
+          "attic key",
+          "big axe",
           "brass key",
-          "brass knocker",
-          "brass lock",
-          "brass nameplate",
           "bloodied bandage",
           "bloodied cloth",
-          "carved initials",
-          "carved message",
-          "china cup",
+          "cemetery dirt",
           "china tea cup",
+          "china cup",
           "china teacup",
-          "cold blue flame",
-          "cold blue fire",
-          "cold fire",
-          "cracked window",
-          "crooked drawer",
-          "crooked headstone",
-          "crooked headstones",
-          "dark archway",
+          "cold ash",
+          "cold brass key",
           "disturbed soil",
-          "dull brass lock",
-          "empty head chair",
           "family photograph",
           "family photo",
-          "floor carving",
-          "floor initials",
+          "face down photograph",
+          "face down photo",
+          "face-down photograph",
+          "face-down photo",
+          "flat stone",
           "formal invitation",
-          "front door",
-          "garden door",
-          "gargoyle jaw",
-          "gargoyle knocker",
-          "grave marker",
+          "glass jar",
           "grave dirt",
-          "half-open door",
-          "hanging tools",
-          "hanging utensils",
-          "head chair",
-          "heavy brass knocker",
-          "hearth ash",
-          "hearth fire",
+          "grave soil",
           "heavy axe",
-          "heavy oak door",
-          "hidden carving",
+          "hearth ash",
+          "hearth cinders",
+          "household ledger",
           "invitation card",
-          "iron gate",
-          "iron gates",
-          "keyhole",
-          "large ornate keyhole",
+          "kitchen axe",
           "lidded teapot",
-          "long walnut table",
-          "loose papers",
           "loose grave dirt",
           "loose soil",
-          "narrow nameplate",
-          "narrow brass nameplate",
-          "oak door",
-          "old grave",
-          "old headstone",
+          "mother's bandage",
+          "mothers bandage",
+          "old brass key",
+          "old invitation",
+          "old key",
           "old ledger",
           "old photograph",
-          "old writing desk",
-          "oil painting",
-          "oil paintings",
-          "oil portrait",
-          "oil portraits",
-          "ornate keyhole",
+          "old photo",
+          "oily stone",
           "pale ash",
+          "pale cinders",
           "pale hearth ash",
-          "pale scrapes",
-          "painted ancestors",
-          "painted faces",
-          "place settings",
+          "photograph",
           "porcelain cup",
           "porcelain teacup",
-          "rocking chair",
           "ritual book",
           "ritual ledger",
           "ritual teapot",
-          "rusted gate",
-          "rusted gates",
-          "rusted garden blades",
-          "rusted iron gate",
-          "rusted iron gates",
-          "scarred worktable",
-          "sealed jar",
           "sealed glass jar",
+          "sealed jar",
           "sharp axe",
-          "sharp tools",
+          "sharp heavy axe",
+          "sharpened axe",
+          "sharpened heavy axe",
           "sharpening stone",
           "silver spoon",
           "silver teapot",
           "silver teaspoon",
           "single china teacup",
           "single teacup",
-          "small table",
           "small brass key",
-          "stone hearth",
-          "sunken grave",
-          "swollen sideboard",
           "tea cup",
+          "tea spoon",
           "thick glass jar",
-          "tiny initials",
-          "tools on wall",
           "unlabelled jar",
-          "unlabelled jars",
           "unlabeled jar",
-          "unlabeled jars",
-          "violet steam",
-          "watching faces",
-          "warped wardrobe",
-          "warped door",
-          "warped shed door",
-          "white cloth",
+          "wet dirt",
+          "wet soil",
+          "whet stone",
+          "whetstone",
           "white bandage",
+          "white card",
+          "white cloth",
           "white teacup",
           "witness jar",
-          "writing desk",
           "bandage",
-          "candelabrum",
-          "carving",
-          "drawer",
-          "floorboards",
-          "gargoyle",
-          "hearth",
-          "headstones",
-          "initials",
-          "knocker",
-          "lock",
-          "marker",
-          "nameplate",
-          "photograph",
-          "portraits",
-          "sideboard",
-          "steam",
-          "teapot",
+          "card",
+          "ledger",
+          "photo",
           "teacup",
-          "teacups",
-          "workbench"
+          "teapot"
         ].sort((a, b) => b.length - a.length);
 
         const interactiveTermPattern = new RegExp(
@@ -384,9 +317,9 @@ def build_html():
           "gi"
         );
 
-        function highlightInteractiveTerms(safeLine) {{
+        function emphasizeInteractiveObjects(safeLine) {{
           return safeLine.replace(interactiveTermPattern, (match, prefix, term) => {{
-            return prefix + '<span class="interactive-item">' + term + '</span>';
+            return prefix + '<span class="interactive-object">' + term + '</span>';
           }});
         }}
 
@@ -394,8 +327,8 @@ def build_html():
           return /[A-Za-z]/.test(text[index - 1] || "") && /[A-Za-z]/.test(text[index + 1] || "");
         }}
 
-        function formatLineWithHighlights(line) {{
-          return highlightInteractiveTerms(escapeHtml(line));
+        function formatPlainLine(line) {{
+          return emphasizeInteractiveObjects(escapeHtml(line));
         }}
 
         function formatMissyLine(line) {{
@@ -410,8 +343,8 @@ def build_html():
 
             const chunk = line.slice(index, i);
             html += inQuote
-              ? '<span class="missy-quote">' + formatLineWithHighlights(chunk) + '</span>'
-              : formatLineWithHighlights(chunk);
+              ? '<span class="missy-quote">' + formatPlainLine(chunk) + '</span>'
+              : formatPlainLine(chunk);
             html += escapeHtml("'");
             inQuote = !inQuote;
             index = i + 1;
@@ -419,22 +352,9 @@ def build_html():
 
           const rest = line.slice(index);
           html += inQuote
-            ? '<span class="missy-quote">' + formatLineWithHighlights(rest) + '</span>'
-            : formatLineWithHighlights(rest);
+            ? '<span class="missy-quote">' + formatPlainLine(rest) + '</span>'
+            : formatPlainLine(rest);
           return html;
-        }}
-
-        function formatItemsLine(line) {{
-          const match = line.match(/^(Items here: )(.+)$/);
-          if (!match) {{
-            return null;
-          }}
-
-          const items = match[2]
-            .split(", ")
-            .map((item) => '<span class="item-name">' + escapeHtml(item) + '</span>')
-            .join(", ");
-          return escapeHtml(match[1]) + items;
         }}
 
         function formatGameText(text) {{
@@ -448,11 +368,7 @@ def build_html():
               if (isMissyLine(line)) {{
                 return formatMissyLine(line);
               }}
-              const itemsLine = formatItemsLine(line);
-              if (itemsLine) {{
-                return itemsLine;
-              }}
-              return formatLineWithHighlights(line);
+              return formatPlainLine(line);
             }})
             .join("\\n");
         }}

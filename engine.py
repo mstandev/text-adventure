@@ -92,6 +92,7 @@ class GameState:
         self.attic_primed = False
         self.read_invitation = False
         self.moved_portraits = False
+        self.wardrobe_moved = False
         self.spoke_with_mother = False
         self.attic_seen = False
         self.tea_invited = False
