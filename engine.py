@@ -3,42 +3,48 @@
 class AdvancedParser:
     def __init__(self):
         self.synonyms = {
-            "go": ["walk", "run", "north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"],
-            "take": ["get", "grab", "pick", "collect", "take"],
-            "drop": ["drop", "leave", "discard"],
-            "examine": ["look", "check", "inspect", "examine", "peek", "x"],
-            "use": ["apply", "put", "place", "give", "cast", "scatter", "use"],
-            "inventory": ["i", "items", "bag", "inventory"],
-            "unlock": ["unlock"],
-            "drink": ["sip", "gulp", "consume", "drink"],
-            "knock": ["bang", "rap", "tap", "knock", "use"],
-            "look": ["l", "view", "describe"],
-            "search": ["search", "feel", "probe"],
-            "listen": ["listen", "hear"],
-            "talk": ["talk", "speak"],
-            "ask": ["ask"],
-            "show": ["show"],
-            "read": ["read"],
-            "smell": ["smell", "sniff"],
-            "exit": ["exit"],
-            "open": ["open"],
-            "enter": ["enter"],
-            "close": ["close", "shut"],
-            "move": ["move", "push", "pull", "drag", "lift"],
-            "pour": ["pour", "spill"],
-            "light": ["light", "ignite", "burn"],
-            "sharpen": ["sharpen", "hone", "whet"],
-            "attack": ["attack", "kill", "hit", "strike", "swing", "slash", "murder", "stab", "chop", "break", "smash", "damage", "crack"],
-            "restart": ["restart", "reset", "startover"],
-            "help": ["help", "commands", "?"]
+            "go": ("walk", "run", "climb", "north", "south", "east", "west", "up", "down", "n", "s", "e", "w", "u", "d"),
+            "take": ("get", "grab", "pick", "collect", "remove", "take"),
+            "drop": ("drop", "discard"),
+            "examine": ("look", "check", "inspect", "examine", "peek", "x"),
+            "use": ("apply", "put", "place", "give", "cast", "scatter", "throw", "sprinkle", "wrap", "tie", "press", "touch", "smother", "cover", "use"),
+            "inventory": ("i", "items", "bag", "inventory"),
+            "unlock": ("unlock",),
+            "drink": ("sip", "gulp", "consume", "drink"),
+            "knock": ("bang", "rap", "tap", "knock", "use"),
+            "look": ("l", "view", "describe"),
+            "search": ("search", "feel", "probe"),
+            "listen": ("listen", "hear"),
+            "talk": ("talk", "speak"),
+            "ask": ("ask", "question"),
+            "show": ("show",),
+            "read": ("read",),
+            "smell": ("smell", "sniff"),
+            "exit": ("exit", "leave"),
+            "open": ("open",),
+            "enter": ("enter",),
+            "close": ("close", "shut"),
+            "move": ("move", "push", "pull", "drag", "lift", "turn", "rotate", "shift", "slide", "straighten", "adjust", "tilt"),
+            "pour": ("pour", "spill"),
+            "light": ("light", "ignite", "burn"),
+            "sharpen": ("sharpen", "hone", "whet"),
+            "attack": ("attack", "kill", "hit", "strike", "swing", "slash", "murder", "stab", "chop", "break", "smash", "damage", "crack"),
+            "restart": ("restart", "reset", "startover"),
+            "help": ("help", "commands", "?")
         }
+        self.verb_lookup = {}
+        for verb, aliases in self.synonyms.items():
+            self.verb_lookup.setdefault(verb, verb)
+            for alias in aliases:
+                self.verb_lookup.setdefault(alias, verb)
         self.direction_map = {
             "n": "north", "north": "north", "s": "south", "south": "south",
             "e": "east", "east": "east", "w": "west", "west": "west",
-            "u": "up", "up": "up", "d": "down", "down": "down"
+            "u": "up", "up": "up", "upstairs": "up",
+            "d": "down", "down": "down", "downstairs": "down"
         }
-        self.prepositions = ["with", "using", "on", "in", "at", "to", "about", "into", "across", "over"]
-        self.ignored = ["the", "a", "an", "some"]
+        self.prepositions = frozenset(("with", "using", "on", "in", "inside", "at", "to", "about", "into", "through", "across", "over", "around", "off", "from"))
+        self.ignored = frozenset(("the", "a", "an", "some"))
 
     def parse(self, user_input):
         tokens = [w for w in user_input.lower().split() if w not in self.ignored]
@@ -46,7 +52,7 @@ class AdvancedParser:
         raw_verb = tokens[0]
         if raw_verb in self.direction_map:
             return "go", self.direction_map[raw_verb], None, None
-        verb = next((m for m, s in self.synonyms.items() if raw_verb == m or raw_verb in s), raw_verb)
+        verb = self.verb_lookup.get(raw_verb, raw_verb)
         obj, prep, i_obj = None, None, None
         for i in range(1, len(tokens)):
             if tokens[i] in self.prepositions:
@@ -57,6 +63,8 @@ class AdvancedParser:
         if prep and not obj and i_obj:
             obj = i_obj
             i_obj = None
+        elif prep and not obj and not i_obj:
+            obj = prep
         if not prep and len(tokens) > 1:
             obj = " ".join(tokens[1:])
         if verb == "go" and obj in self.direction_map:
@@ -84,6 +92,7 @@ class GameState:
         self.attic_primed = False
         self.read_invitation = False
         self.moved_portraits = False
+        self.wardrobe_moved = False
         self.spoke_with_mother = False
         self.attic_seen = False
         self.tea_invited = False
@@ -97,6 +106,7 @@ class GameState:
         self.discovered_witness = False
         self.missy_heard = False
         self.missy_voice_rooms = set()
+        self.front_gate_hint_seen = False
         self.dead_characters = set()
         self.game_over = False
 
