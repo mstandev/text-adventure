@@ -572,9 +572,9 @@ def handle_attack(gs, room, target, weapon_name=None):
         print("The teapot is not alive in any merciful sense. If you mean to break the ceremony, the steam is what matters.")
         return False
 
-    if target in JAR_TARGETS and gs.current_room == "Cellar":
+    if target in JAR_TARGETS and sealed_jar_accessible(gs):
         if weapon:
-            print(f"You strike the sealed jar with the {weapon}. The blow rings through the cellar like a bell struck underwater.")
+            print(f"You strike the sealed jar with the {weapon}. The blow rings through the glass like a bell struck underwater.")
             print("The glass does not crack. For a moment the liquid inside clouds white, then clears around a pale shape pressing one hand to the inside.")
         else:
             print("You try to break the sealed jar with your bare hands. The glass is cold, thick, and stubbornly whole.")
@@ -880,6 +880,10 @@ def pour_tea_into_bowl(gs, room):
 
 def item_available(gs, room, item_id):
     return item_id in room.items or item_id in gs.inventory
+
+def sealed_jar_accessible(gs):
+    room = gs.rooms[gs.current_room]
+    return item_available(gs, room, "sealed jar")
 
 MOTHER_TARGETS = frozenset(("mother", "mom"))
 GRANDMA_TARGETS = frozenset(("grandma", "grandmother"))
@@ -2565,11 +2569,11 @@ class GameSession:
                 if gs.game_over:
                     self.finished = True
                     return False
-            elif held_item == "bloodied bandage" and target_name in JAR_TARGETS and gs.current_room == "Cellar":
+            elif held_item == "bloodied bandage" and target_name in JAR_TARGETS and sealed_jar_accessible(gs):
                 awaken_witness_jar(gs)
-            elif target_item == "bloodied bandage" and obj in JAR_TARGETS and gs.current_room == "Cellar":
+            elif target_item == "bloodied bandage" and obj in JAR_TARGETS and sealed_jar_accessible(gs):
                 awaken_witness_jar(gs)
-            elif held_item and target_name in JAR_TARGETS and gs.current_room == "Cellar":
+            elif held_item and target_name in JAR_TARGETS and sealed_jar_accessible(gs):
                 handle_attack(gs, room, target_name, held_item)
             elif is_axe_sharpening_pair(held_item, target_name):
                 sharpen_axe(gs)

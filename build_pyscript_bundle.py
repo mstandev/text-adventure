@@ -74,6 +74,7 @@ def nearing_bad_ending():
 
 
 def update_interactive_visual_state():
+    document.body.dataset.tranceActive = "true" if session.gs.trance else "false"
     if nearing_bad_ending():
         document.body.dataset.interactiveState = "danger"
     elif session.gs.trance:
@@ -153,8 +154,11 @@ def build_html():
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>House of Amon - PyScript</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://pyscript.net/releases/2026.3.1/core.css" />
-    <link rel="stylesheet" href="./web.css?v=20260611-takeable-items" />
+    <link rel="stylesheet" href="./web.css?v=20260624-trance-input-gold" />
     <script type="module" src="https://pyscript.net/releases/2026.3.1/core.js"></script>
   </head>
   <body>
@@ -222,6 +226,18 @@ def build_html():
 
         function isMissyLine(line) {{
           return /Missy's (voice|thought)|Missy (whispers|says)|her voice says.*inside your mind/.test(line);
+        }}
+
+        function isGrandmaLine(line) {{
+          return /Grandma:|Grandma(?:'s)? voice|Grandma\b.*'|'.*Grandma\s+(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)|^'[^']*'[, ]+she\s+(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)\b/.test(line);
+        }}
+
+        function isMotherLine(line) {{
+          return /Mother(?:'s)? (?:barely|warning|lips|answer|eyes).*'|Mother stirs|Mother is too weak to answer|'.*Mother\s+(?:says|asks|whispers|answers|murmurs)/.test(line);
+        }}
+
+        function isSpokenLine(line) {{
+          return /(?:voice|whisper|whispers|murmur|murmurs|says|asks|answers|tells|insists|calls|cries|shouts).*'|^'[^']*'[, ]+[^.]*\b(?:says|asks|whispers|murmurs|answers|tells|insists|calls|cries|shouts)\b/.test(line);
         }}
 
         const interactiveTerms = [
@@ -327,23 +343,27 @@ def build_html():
           return /[A-Za-z]/.test(text[index - 1] || "") && /[A-Za-z]/.test(text[index + 1] || "");
         }}
 
+        function isLiteralNameQuote(text, index) {{
+          return text.slice(index, index + 6) === "'THEM'" || text.slice(index - 5, index + 1) === "'THEM'";
+        }}
+
         function formatPlainLine(line) {{
           return emphasizeInteractiveObjects(escapeHtml(line));
         }}
 
-        function formatMissyLine(line) {{
+        function formatSpokenLine(line) {{
           let html = "";
           let index = 0;
           let inQuote = false;
 
           for (let i = 0; i < line.length; i += 1) {{
-            if (line[i] !== "'" || isWordApostrophe(line, i)) {{
+            if (line[i] !== "'" || isWordApostrophe(line, i) || isLiteralNameQuote(line, i)) {{
               continue;
             }}
 
             const chunk = line.slice(index, i);
             html += inQuote
-              ? '<span class="missy-quote">' + formatPlainLine(chunk) + '</span>'
+              ? '<span class="spoken-quote">' + formatPlainLine(chunk) + '</span>'
               : formatPlainLine(chunk);
             html += escapeHtml("'");
             inQuote = !inQuote;
@@ -352,7 +372,7 @@ def build_html():
 
           const rest = line.slice(index);
           html += inQuote
-            ? '<span class="missy-quote">' + formatPlainLine(rest) + '</span>'
+            ? '<span class="spoken-quote">' + formatPlainLine(rest) + '</span>'
             : formatPlainLine(rest);
           return html;
         }}
@@ -365,8 +385,20 @@ def build_html():
               if (/^--- .+ ---$/.test(line)) {{
                 return '<span class="room-title">' + safeLine + '</span>';
               }}
+              if (/^> /.test(line)) {{
+                return '<span class="player-input-line">' + safeLine + '</span>';
+              }}
               if (isMissyLine(line)) {{
-                return formatMissyLine(line);
+                return '<span class="missy-line">' + formatSpokenLine(line) + '</span>';
+              }}
+              if (isMotherLine(line)) {{
+                return '<span class="mother-line">' + formatSpokenLine(line) + '</span>';
+              }}
+              if (isGrandmaLine(line)) {{
+                return '<span class="grandma-line">' + formatSpokenLine(line) + '</span>';
+              }}
+              if (isSpokenLine(line)) {{
+                return formatSpokenLine(line);
               }}
               return formatPlainLine(line);
             }})
