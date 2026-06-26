@@ -46,6 +46,14 @@ PRACTICED_PLACEHOLDER_AFTER = 6
 DANGER_WEAPONS = ("sharp axe", "heavy axe")
 
 
+def transcript_state():
+    if session.gs.trance and not session.gs.weakened_trance:
+        return "trance"
+    if session.gs.trance and session.gs.weakened_trance:
+        return "weakened"
+    return "early"
+
+
 def capture_output(action, *args):
     stream = io.StringIO()
     with contextlib.redirect_stdout(stream):
@@ -56,7 +64,7 @@ def capture_output(action, *args):
 def append_output(text):
     if not text:
         return
-    window.typeGameText(text)
+    window.typeGameText(text, transcript_state())
 
 
 def nearing_bad_ending():
@@ -75,6 +83,7 @@ def nearing_bad_ending():
 
 def update_interactive_visual_state():
     document.body.dataset.tranceActive = "true" if session.gs.trance else "false"
+    document.body.dataset.weakenedTranceActive = "true" if session.gs.weakened_trance else "false"
     if nearing_bad_ending():
         document.body.dataset.interactiveState = "danger"
     elif session.gs.trance:
@@ -154,11 +163,13 @@ def build_html():
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>House of Amon - PyScript</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="./favicon.ico" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://pyscript.net/releases/2026.3.1/core.css" />
-    <link rel="stylesheet" href="./web.css?v=20260624-trance-input-gold" />
+    <link rel="stylesheet" href="./web.css?v=20260625-transcript-state" />
     <script type="module" src="https://pyscript.net/releases/2026.3.1/core.js"></script>
   </head>
   <body>
@@ -210,10 +221,17 @@ def build_html():
         const output = document.getElementById("game-output");
         const outputFrame = document.querySelector(".output-frame");
         const textQueue = [];
+        const transcriptBlocks = [];
         const typeDelayMs = 2;
         const charsPerTick = 2;
-        let outputText = "";
         let typing = false;
+
+        function normalizeTranscriptState(state) {{
+          if (state === "trance" || state === "weakened") {{
+            return state;
+          }}
+          return "early";
+        }}
 
         function escapeHtml(text) {{
           return text
@@ -228,8 +246,32 @@ def build_html():
           return /Missy's (voice|thought)|Missy (whispers|says)|her voice says.*inside your mind/.test(line);
         }}
 
+        function hasDialogueQuote(line) {{
+          let quoteCount = 0;
+          for (let i = 0; i < line.length; i += 1) {{
+            if (line[i] === "'" && !isWordApostrophe(line, i) && !isLiteralNameQuote(line, i)) {{
+              quoteCount += 1;
+            }}
+          }}
+          return quoteCount >= 2;
+        }}
+
         function isGrandmaLine(line) {{
-          return /Grandma:|Grandma(?:'s)? voice|Grandma\b.*'|'.*Grandma\s+(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)|^'[^']*'[, ]+she\s+(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)\b/.test(line);
+          const speechVerb = "(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)";
+          const grandmaAttribution = new RegExp("\\\\bGrandma\\\\s+" + speechVerb + "\\\\b");
+          const sheAttribution = new RegExp("\\\\bshe\\\\s+" + speechVerb + "\\\\b");
+          if (/Grandma:/.test(line)) {{
+            return true;
+          }}
+          if (/^'/.test(line) && sheAttribution.test(line)) {{
+            return true;
+          }}
+          if (!hasDialogueQuote(line)) {{
+            return false;
+          }}
+          return grandmaAttribution.test(line) ||
+            (/\\bGrandma(?:'s)?\\b/.test(line) && sheAttribution.test(line)) ||
+            /^Grandma(?:'s)?\\b/.test(line);
         }}
 
         function isMotherLine(line) {{
@@ -237,7 +279,7 @@ def build_html():
         }}
 
         function isSpokenLine(line) {{
-          return /(?:voice|whisper|whispers|murmur|murmurs|says|asks|answers|tells|insists|calls|cries|shouts).*'|^'[^']*'[, ]+[^.]*\b(?:says|asks|whispers|murmurs|answers|tells|insists|calls|cries|shouts)\b/.test(line);
+          return /(?:voice|whisper|whispers|murmur|murmurs|says|asks|answers|tells|insists|calls|cries|shouts).*'|^'[^']*'[, ]+[^.]*\\b(?:says|asks|whispers|murmurs|answers|tells|insists|calls|cries|shouts)\\b/.test(line);
         }}
 
         const interactiveTerms = [
@@ -377,8 +419,9 @@ def build_html():
           return html;
         }}
 
-        function formatGameText(text) {{
-          return text
+        function formatGameText(text, state) {{
+          const blockState = normalizeTranscriptState(state);
+          const html = text
             .split("\\n")
             .map((line) => {{
               const safeLine = escapeHtml(line);
@@ -403,20 +446,27 @@ def build_html():
               return formatPlainLine(line);
             }})
             .join("\\n");
+          return '<span class="transcript-block transcript-block--' + blockState + '">' + html + '</span>';
+        }}
+
+        function renderTranscript() {{
+          output.innerHTML = transcriptBlocks
+            .map((block) => formatGameText(block.text, block.state))
+            .join("\\n\\n");
         }}
 
         function scrollOutput() {{
           outputFrame.scrollTop = outputFrame.scrollHeight;
         }}
 
-        function typeNextChunk(text, index) {{
+        function typeNextChunk(block, text, index) {{
           const nextIndex = Math.min(index + charsPerTick, text.length);
-          outputText += text.slice(index, nextIndex);
-          output.innerHTML = formatGameText(outputText);
+          block.text += text.slice(index, nextIndex);
+          renderTranscript();
           scrollOutput();
 
           if (nextIndex < text.length) {{
-            window.setTimeout(() => typeNextChunk(text, nextIndex), typeDelayMs);
+            window.setTimeout(() => typeNextChunk(block, text, nextIndex), typeDelayMs);
             return;
           }}
 
@@ -432,17 +482,24 @@ def build_html():
 
           typing = true;
           output.classList.add("is-typing");
-          const nextText = textQueue.shift();
-          const prefix = outputText ? "\\n\\n" : "";
-          typeNextChunk(prefix + nextText, 0);
+          const nextItem = textQueue.shift();
+          const block = {{
+            text: "",
+            state: normalizeTranscriptState(nextItem.state)
+          }};
+          transcriptBlocks.push(block);
+          typeNextChunk(block, nextItem.text, 0);
         }}
 
-        window.typeGameText = (text) => {{
+        window.typeGameText = (text, state = "early") => {{
           if (!text) {{
             return;
           }}
 
-          textQueue.push(String(text));
+          textQueue.push({{
+            text: String(text),
+            state: normalizeTranscriptState(state)
+          }});
           if (!typing) {{
             typeNextQueuedText();
           }}

@@ -24,8 +24,8 @@ class AdvancedParser:
             "open": ("open",),
             "enter": ("enter",),
             "close": ("close", "shut"),
-            "move": ("move", "push", "pull", "drag", "lift", "turn", "rotate", "shift", "slide", "straighten", "adjust", "tilt"),
-            "pour": ("pour", "spill"),
+            "move": ("move", "push", "pull", "drag", "lift", "turn", "rotate", "shift", "slide", "straighten", "adjust"),
+            "pour": ("pour", "pouring", "spill", "spilling", "tip", "tipping", "tilt", "tilting", "dump", "dumping", "empty", "emptying"),
             "light": ("light", "ignite", "burn"),
             "sharpen": ("sharpen", "hone", "whet"),
             "attack": ("attack", "kill", "hit", "strike", "swing", "slash", "murder", "stab", "chop", "break", "smash", "damage", "crack"),
@@ -43,7 +43,7 @@ class AdvancedParser:
             "u": "up", "up": "up", "upstairs": "up",
             "d": "down", "down": "down", "downstairs": "down"
         }
-        self.prepositions = frozenset(("with", "using", "on", "in", "inside", "at", "to", "about", "into", "through", "across", "over", "around", "off", "from"))
+        self.prepositions = frozenset(("with", "using", "on", "onto", "in", "inside", "at", "to", "about", "into", "through", "across", "over", "around", "off", "from"))
         self.ignored = frozenset(("the", "a", "an", "some"))
 
     def parse(self, user_input):
@@ -96,11 +96,13 @@ class GameState:
         self.spoke_with_mother = False
         self.attic_seen = False
         self.tea_invited = False
+        self.teacup_has_tea = False
         self.attic_choice = None
         self.bandage_taken = False
         self.witness_awakened = False
         self.ash_revealed = False
         self.teapot_smothered = False
+        self.spell_broken = False
         self.ritual_branch = None
         self.branch_scene_seen = False
         self.discovered_witness = False

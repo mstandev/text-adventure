@@ -393,6 +393,18 @@ h1 {
   text-shadow: var(--glow-soft), -0.8px 0 rgba(255, 48, 48, 0.14), 0.8px 0 rgba(60, 225, 255, 0.12);
 }
 
+.output-frame .transcript-block {
+  color: var(--interactive);
+}
+
+.output-frame .transcript-block--trance {
+  color: #9ab81c;
+}
+
+.output-frame .transcript-block--weakened {
+  color: var(--interactive);
+}
+
 .output-frame .room-title {
   font-weight: 700;
   font-size: calc(1em + 2px);
@@ -400,17 +412,24 @@ h1 {
   text-shadow: var(--glow-strong), -1px 0 rgba(255, 48, 48, 0.2), 1px 0 rgba(60, 225, 255, 0.18);
 }
 
-body[data-trance-active="true"] .output-frame pre,
-body[data-trance-active="true"] .output-frame .room-title {
+.output-frame .transcript-block--trance .room-title {
   color: #9ab81c;
+}
+
+.output-frame .transcript-block--weakened .room-title {
+  color: var(--interactive);
 }
 
 .output-frame .player-input-line {
   color: #7da11b;
 }
 
-body[data-trance-active="true"] .output-frame .player-input-line {
+.output-frame .transcript-block--trance .player-input-line {
   color: #e0a419;
+}
+
+.output-frame .transcript-block--weakened .player-input-line {
+  color: #7da11b;
 }
 
 .output-frame .interactive-object {
@@ -437,8 +456,9 @@ body[data-trance-active="true"] .output-frame .player-input-line {
   text-shadow: none;
 }
 
-body[data-trance-active="true"] .output-frame .grandma-line {
-  color: #d43528;
+.output-frame .transcript-block--trance .grandma-line,
+.output-frame .transcript-block--weakened .grandma-line {
+  color: #e8513f;
 }
 
 .output-frame pre.is-typing::after {

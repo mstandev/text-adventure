@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Wet blood drop favicon</title>
+  <desc id="desc">A compact red blood drop with a dark red semi-gradient fill and a tiny wet highlight.</desc>
+  <defs>
+    <linearGradient id="bloodGradient" x1="144" y1="64" x2="390" y2="456" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff4b4b"/>
+      <stop offset="0.38" stop-color="#d31120"/>
+      <stop offset="0.72" stop-color="#95000c"/>
+      <stop offset="1" stop-color="#560006"/>
+    </linearGradient>
+    <radialGradient id="innerGlow" cx="35%" cy="28%" r="67%">
+      <stop offset="0" stop-color="#ff8181" stop-opacity="0.34"/>
+      <stop offset="0.45" stop-color="#e60012" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#470005" stop-opacity="0.24"/>
+    </radialGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="145%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="16" flood-color="#300003" flood-opacity="0.32"/>
+    </filter>
+  </defs>
+
+  <path filter="url(#softShadow)" d="M256 37C232 85 155 170 124 245c-44 107 34 222 132 222s176-115 132-222C357 170 280 85 256 37Z" fill="url(#bloodGradient)"/>
+  <path d="M256 37C232 85 155 170 124 245c-44 107 34 222 132 222s176-115 132-222C357 170 280 85 256 37Z" fill="url(#innerGlow)"/>
+  <path d="M183 185c-27 36-44 70-50 103-10 56 16 112 64 137-30-42-35-87-20-132 13-39 40-76 62-109 18-27 30-52 17-84-14 24-43 54-73 85Z" fill="#ffffff" opacity="0.08"/>
+  <path d="M196 174c22-31 42-56 53-83 11 30-7 57-25 84-22 32-45 66-55 102-7 25-6 51 2 76-19-39-17-78 6-124 5-10 12-22 19-55Z" fill="#ffb3b3" opacity="0.14"/>
+  <ellipse cx="199" cy="176" rx="31" ry="17" transform="rotate(-47 199 176)" fill="#fff7f7" opacity="0.72"/>
+  <ellipse cx="216" cy="145" rx="12" ry="7" transform="rotate(-47 216 145)" fill="#ffffff" opacity="0.44"/>
+</svg>

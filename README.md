@@ -1,11 +1,8 @@
 # The House of Amon
 
-A gothic parser-based text adventure about a family estate, a locked attic, a ritual teapot, and the voices the house calls guests.
+The House of Amon is a gothic parser-based text adventure about a family estate, an attic room, a ritual tea service, and the voices the house calls guests.
 
-The current build can be played two ways:
-
-- In a terminal with Python.
-- In a browser through the generated PyScript wrapper.
+The game is written in Python and can be played in either a terminal or a browser. The browser version uses PyScript, but the Python files remain the source of truth.
 
 ## Play In Python
 
@@ -17,9 +14,7 @@ python3 main.py
 
 ## Play In The Browser
 
-Open `index.html` in a browser. The page loads the Python runtime, starts the game automatically, and shows a command input labeled `What do you do?`
-
-If your browser blocks the local file, serve the folder locally:
+Serve the folder locally:
 
 ```bash
 python3 -m http.server 8000
@@ -28,47 +23,44 @@ python3 -m http.server 8000
 Then open:
 
 ```text
-http://localhost:8000
+http://localhost:8000/index.html
 ```
 
-## Current Game
+Opening `index.html` directly as a local file may be blocked by browser security rules, and PyScript generally behaves more reliably through `localhost`.
 
-The playable build includes:
+## Current Build
 
-- A compact estate map with the Front Gate, Front Door, Foyer, Living Room, Dining Room, Study, Kitchen, Cellar, Garden, Shed, Upstairs Hallway, Your Bedroom, Attic Landing, and Attic.
-- A clear attic access puzzle involving the front-door knocker, brass key, upstairs paintings, hidden carving, attic lock, and attic knock.
-- Investigation verbs for inspecting, searching, reading, listening, smelling, and peeking.
-- Social commands for talking, asking Grandma or Mother about topics, and showing discovered items.
-- Item interaction with taking, dropping, unlocking, moving, turning, using, sharpening, pouring, drinking, and attacking.
-- Grounded, full-trance, and weakened-trance perception states.
-- A ritual branch where drinking tea differs from using hearth ash against the teapot's steam.
-- A witness-jar clue chain involving Mother's bloodied bandage.
-- A china teacup and teapot that return to the attic if carried away.
-- Missy as an internal voice rather than a visible character.
-- Branch-aware bad endings for violent choices.
-- A restart command with confirmation.
+The current version includes:
 
-## Example Commands
+- A 15-room estate map with the front grounds, family rooms, work rooms, cellar, garden, shed, upstairs hall, attic landing, and attic.
+- A parser that accepts movement, investigation, inventory, social, ritual, restart, and combat commands.
+- State-aware descriptions for grounded play, full trance, weakened trance, and the spell-broken aftermath.
+- A layered attic sequence with Grandma, a teapot, a china teacup, and branching player attitudes.
+- A witness-jar and ash branch that can weaken the house's hold.
+- A spell-broken state that changes the whole map, quiets Missy's internal voice, removes Grandma from the attic, and shows Mother awake in the living room.
+- Negative endings for violent choices, with text that reflects the path the player took.
+- A browser wrapper with CRT-inspired styling, typed text, move counter, favicon, and state-preserving transcript colors.
+
+## Commands
+
+Try natural parser commands such as:
 
 ```text
 help
 inspect
-n
-s
-knock door
-enter house
-search room
-read ledger
+search
+read
+listen
+smell
+talk to mother
+ask grandma about tea
 show photo to mother
-move paintings
-take brass key
-unlock attic door
-knock on door
-enter attic
-drink tea
-use bandage on jar
-search hearth
-use ash on teapot
+take key
+get all
+drop spoon
+inventory
+i
+use item on target
 restart
 quit
 ```
@@ -84,18 +76,34 @@ u
 d
 ```
 
-## Project Files
+One puzzle hint: the house responds better to manners than force.
 
-- `main.py`: game session, command handling, puzzle logic, branching states, endings, and move counting.
-- `engine.py`: parser, room model, and game state.
-- `world.py`: room graph, exits, items, scenery, and room descriptions.
-- `build_pyscript_bundle.py`: rebuilds the browser wrapper by embedding the Python sources into `index.html`.
-- `web.css`: browser UI styling.
-- `index.html`: generated browser version of the game.
-- `GAME_DESIGN.md`: current design reference for the implemented build.
+## Browser Notes
 
-When changing Python game logic that should appear in the browser version, rebuild `index.html`:
+The generated browser page is `index.html`. It embeds the current Python sources so the game can run through PyScript.
+
+When changing Python game logic or browser wrapper behavior, rebuild the page:
 
 ```bash
 python3 build_pyscript_bundle.py
 ```
+
+Recent browser behavior:
+
+- The game starts automatically after the Python runtime loads.
+- The command prompt is labeled `What do you do?`
+- Enter/Return and the Send button submit the same command.
+- Repeating the same parser-equivalent command does not increase the move counter.
+- Text that appears before trance keeps its original color after trance begins.
+- New text after trance begins uses the trance color, while later post-trance text can return to the normal color.
+
+## Project Files
+
+- `main.py`: game session, command handling, puzzle logic, branching states, endings, and move counting.
+- `engine.py`: parser, room model, and game state.
+- `world.py`: room graph, exits, items, scenery, and base room descriptions.
+- `build_pyscript_bundle.py`: generates `index.html` by embedding the Python sources.
+- `web.css`: browser UI styling.
+- `index.html`: generated browser version of the game.
+- `favicon.svg` and `favicon.ico`: browser tab icons.
+- `GAME_DESIGN.md`: design reference for the current implemented build.
