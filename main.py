@@ -272,7 +272,7 @@ def inspect_room_text(gs):
 
     if gs.current_room == "Dining Room":
         photo_note = "A family photograph lies face-down on the sideboard, left there with the awkward care of something deliberately hidden." if "family photograph" in room.items else "The sideboard holds a clean rectangle in the dust where the photograph used to lie."
-        floor_note = "The initials carved into the floor are visible now beneath the shifted head chair." if "initials" in room.scenery else "The floor beneath the head chair is scraped pale, though the chair still hides the worst of the marks."
+        floor_note = "The rune circle carved into the floor is visible now beneath the shifted head chair." if "runes" in room.scenery else "The floor beneath the head chair is scraped pale, though the chair still hides the worst of the marks."
         return state_text(
             gs,
             f"You inspect the dining room from the west doorway inward. The walnut table dominates everything, laid with three place settings beneath a blackened silver candelabrum, while the fourth chair at the head feels more ceremonial than useful. {photo_note} {floor_note} The room gives the impression of a family meal preserved at the instant before someone said the unforgivable thing.",
@@ -706,10 +706,20 @@ def room_display_for_target(gs, target):
             return room.name
     return "That room"
 
+OUTSIDE_ROOMS = frozenset(("Front Gate", "Cemetery", "Front Door", "Garden", "Shed"))
+
 def move_player(gs, room, direction):
     destination = room.exits[direction]
     reclaim_attic_items_if_leaving(gs, room, destination)
     gs.current_room = destination
+    if destination in OUTSIDE_ROOMS:
+        print(state_text(
+            gs,
+            f"You head {direction}...",
+            f"You head {direction}, and the night air shifts over the grounds before settling again.",
+            f"You head {direction}. The open air holds its shape, though the house still watches from behind you."
+        ))
+        return
     print(state_text(
         gs,
         f"You head {direction}...",
@@ -806,7 +816,7 @@ def smother_teapot_with_ash(gs, room):
     if gs.attic_choice is None:
         gs.attic_choice = "disrupt"
     print("You cast the hearth ash across the teapot. The violet steam stutters, darkens, and sinks low.")
-    print("For the first time, Grandma sounds uncertain. 'Who taught you that?' she whispers.")
+    print("Grandma's voice sounds uncertain for the first time. 'Who taught you that?' she whispers.")
     print("Something inside your head unlatches. The house does not disappear, but its voice retreats from your bloodstream to the far side of the walls.")
 
 def reveal_hearth_ash(gs, room, intro=None):
@@ -1056,6 +1066,18 @@ OBJECT_ALIASES = {
     "scraped floorboards": "floorboards",
     "scraped boards": "floorboards",
     "pale scrapes": "floor",
+    "initials": "runes",
+    "floor initials": "runes",
+    "carved initials": "runes",
+    "initials carved": "runes",
+    "initials carved floor": "runes",
+    "initials in floor": "runes",
+    "initials on floor": "runes",
+    "tiny initials": "runes",
+    "tiny carved initials": "runes",
+    "circle of initials": "runes",
+    "circle of tiny initials": "runes",
+    "family initials": "runes",
     "fourth chair": "head chair",
     "empty chair": "head chair",
     "empty head chair": "head chair",
@@ -1256,6 +1278,18 @@ def normalize_command_object(verb, name):
 OPEN_FRONT_DOOR_DESC = "The heavy oak door stands open, leading north into the dark foyer. The path back to the Front Gate lies south, and the gargoyle knocker looks almost satisfied above the narrow AMON nameplate."
 
 def portrait_lore_text(gs):
+    if in_full_trance(gs):
+        lines = [
+            "The frames still hang in their severe procession, but the ancestors are no longer inside them.",
+            "AMON, ELISE, MARIUS, and HESTER remain only as tarnished nameplates beneath empty canvases. The paint has not peeled or faded; it has been vacated.",
+            "From inside the walls, their attention moves without faces. The empty frames gape toward the attic stair as if the painted dead stepped out and left the hallway to remember their shapes."
+        ]
+        if gs.moved_portraits:
+            lines.append("One empty frame hangs crooked now. Behind it, the exposed carving reads: 'Let invited blood knock, and the listening room shall answer.'")
+        else:
+            lines.append("Nothing looks back from the canvases, which is worse than being watched.")
+        return "\n".join(lines)
+
     lines = [
         "The oil paintings are arranged like a family court rather than decoration.",
         "The oldest frame bears only the name AMON. The figure inside is narrow-faced and severe, one hand resting on a house plan, the other on a lidded teacup.",
@@ -1265,8 +1299,6 @@ def portrait_lore_text(gs):
     ]
     if gs.moved_portraits:
         lines.append("One frame now hangs crooked. Behind it, the exposed carving reads: 'Let invited blood knock, and the listening room shall answer.'")
-    elif in_full_trance(gs):
-        lines.append("In trance, their painted eyes do not follow you. They wait for you to become worth following.")
     elif in_weakened_trance(gs):
         lines.append("Their eyes have settled back into paint, mostly, though each frame still feels like a listening mouth held shut.")
     else:
@@ -1298,15 +1330,17 @@ DINING_FLOOR_TARGETS = frozenset((
     "scraped boards", "pale scrapes", "scrapes"
 ))
 
-DINING_INITIAL_TARGETS = frozenset((
-    "initials", "floor initials", "carved initials", "initials carved",
-    "initials carved floor", "initials in floor", "initials on floor",
+DINING_RUNE_SEQUENCE = "ᚨ ᛗ ᛟ ᚾ"
+DINING_RUNE_TEXT = f"A circle of rune symbols is carved into the boards beneath the head chair: {DINING_RUNE_SEQUENCE}. Each mark points inward toward the chair, as if the seat is meant to gather the name rather than hold a body."
+
+DINING_RUNE_TARGETS = frozenset((
     "carving", "floor carving", "marks", "carved marks", "letters",
-    "carved letters", "tiny initials", "tiny carved initials",
-    "circle of initials", "circle of tiny initials", "carved circle",
-    "family initials"
+    "carved letters", "carved circle", "runes", "rune", "floor runes", "carved runes",
+    "rune symbols", "symbols", "floor symbols", "carved symbols",
+    "sigils", "sigil", "floor sigils", "carved sigils", "rune circle",
+    "circle of runes", "circle of symbols"
 ))
-DINING_SEARCH_TARGETS = DINING_FLOOR_TARGETS | DINING_INITIAL_TARGETS
+DINING_SEARCH_TARGETS = DINING_FLOOR_TARGETS | DINING_RUNE_TARGETS
 
 BEHIND_PAINTING_TARGETS = frozenset((
     "behind painting", "behind paintings", "behind portrait", "behind portraits",
@@ -1333,8 +1367,9 @@ FIXED_TAKE_RESPONSES = {
     "sideboard": "The sideboard is too bulky to take, and whatever it has hidden will have to be found without carrying the furniture away.",
     "floor": "The floorboards are nailed down beneath your feet. The marks cut into them are what matter.",
     "floorboards": "The floorboards are nailed down beneath your feet. The marks cut into them are what matter.",
-    "initials": "The initials are carved into the floor. You can read them, but not take them.",
-    "floor initials": "The initials are carved into the floor. You can read them, but not take them.",
+    "runes": "The rune symbols are carved into the floor. You can read them, but not take them.",
+    "rune symbols": "The rune symbols are carved into the floor. You can read them, but not take them.",
+    "symbols": "The symbols are carved into the floor. You can read them, but not take them.",
     "door": "The door is part of the house. It can be opened, entered, or knocked upon, but not taken.",
     "front door": "The front door is part of the house. It can be opened, entered, or knocked upon, but not taken.",
     "knocker": "The brass knocker is fixed into the door. It is meant to be lifted and struck, not pocketed.",
@@ -1507,23 +1542,23 @@ def trance_smell_text(gs, obj):
 
 def trance_read_text(gs, obj):
     if in_weakened_trance(gs):
-        if gs.current_room == "Study" and obj in LEDGER_TARGETS:
+        if obj in LEDGER_TARGETS:
             return "The ledger resists rearranging itself now. A few lines still stand out: invite the blood, calm the witness, guard the heir. The spell has loosened, but the record remembers."
-        if gs.current_room == "Study" and obj in INVITATION_TARGETS:
+        if obj in INVITATION_TARGETS:
             return "The invitation looks like paper again, yet certain words still refuse to fade: blood, name, willing."
-        if gs.current_room == "Dining Room" and obj in PHOTO_TARGETS:
-            return "The extra figures in the photograph are nearly gone. Nearly."
+        if obj in PHOTO_TARGETS:
+            return "The photograph is almost ordinary again, which makes the remaining wrongness harder to dismiss. The extra faces have faded into stains in the wallpaper, and Missy's eyes still seem angled toward the head chair instead of the camera."
         if gs.current_room == "Cemetery" and obj in GRAVE_TARGETS:
             return "The names stay still now, but the stone remembers having moved."
         return None
     if not in_full_trance(gs):
         return None
-    if gs.current_room == "Study" and obj in LEDGER_TARGETS:
+    if obj in LEDGER_TARGETS:
         return "In trance, the ledger rearranges itself into a liturgy: invite the blood, calm the witness, open the room, teach the heir."
-    if gs.current_room == "Study" and obj in INVITATION_TARGETS:
+    if obj in INVITATION_TARGETS:
         return "The invitation card no longer reads like courtesy. It reads like ownership granted in advance."
-    if gs.current_room == "Dining Room" and obj in PHOTO_TARGETS:
-        return "The family photograph is wrong in trance. Behind Grandma, faint extra figures have developed where no one stood when the picture was taken."
+    if obj in PHOTO_TARGETS:
+        return "The family photograph has developed new details in impossible layers. Mother and Missy remain seated, but their eyes have shifted toward the space behind Grandma. The wallpaper there has become a crowd of faint white faces, each blurred except for a mouth shaped around the same silent word. Across the glossy surface, a thread of violet steam curls from the teacups toward the head chair, as if the photograph remembers the ritual before the room admits it."
     if gs.current_room == "Cemetery" and obj in GRAVE_TARGETS:
         return "The names on the headstones ripple. Some family dates end, then begin again a few inches lower in the stone."
     return None
@@ -1791,7 +1826,9 @@ class GameSession:
                 else:
                     print(f"You don't see a {obj} here.")
             elif gs.current_room == "Kitchen" and obj in HEARTH_TARGETS:
-                if in_full_trance(gs):
+                if in_full_trance(gs) and not gs.ash_revealed:
+                    reveal_hearth_ash(gs, room, "You inspect the hearth by following the blue flame down to the places where its light refuses to settle.")
+                elif in_full_trance(gs):
                     print("The hearth is not merely burning now. The blue flame screams silently over a bed of pale ash, and the ash drinks the light instead of reflecting it.")
                     print("Something in the fire has spared those cinders for a reason, but the reason only holds while the house is dreaming through you.")
                 elif in_weakened_trance(gs):
@@ -1799,7 +1836,9 @@ class GameSession:
                 else:
                     print("The stone hearth holds a cold blue flame that gives off light without comfort. Pale ash lies beneath it, ordinary at first glance, waiting for some change in your sight.")
             elif gs.current_room == "Kitchen" and obj in FLAME_TARGETS:
-                if in_full_trance(gs):
+                if in_full_trance(gs) and not gs.ash_revealed:
+                    reveal_hearth_ash(gs, room, "You inspect the blue flame closely, watching the way it bends around one pale place it refuses to touch.")
+                elif in_full_trance(gs):
                     print("The blue flame screams in a frequency you feel in your teeth. Beneath it, the ash stays pale and still, untouched by the fire's panic.")
                 elif in_weakened_trance(gs):
                     print("The blue flame has thinned to a nervous thread. It still avoids the pale ash below it.")
@@ -1869,16 +1908,16 @@ class GameSession:
                 else:
                     print("The sideboard's swollen drawers smell of damp wood and old polish. Its dusty surface holds a clean rectangle where the photograph used to lie.")
             elif gs.current_room == "Dining Room" and obj in DINING_FLOOR_TARGETS:
-                if "initials" in room.scenery:
+                if "runes" in room.scenery:
                     print(room.scenery["floor"])
-                    print(room.scenery["initials"])
+                    print(room.scenery["runes"])
                 else:
                     print("Most of the floorboards disappear beneath the long table, but the boards under the head chair are scraped pale by repeated movement.")
-            elif gs.current_room == "Dining Room" and obj in DINING_INITIAL_TARGETS:
-                if "initials" in room.scenery:
-                    print(room.scenery["initials"])
+            elif gs.current_room == "Dining Room" and obj in DINING_RUNE_TARGETS:
+                if "runes" in room.scenery:
+                    print(room.scenery["runes"])
                 else:
-                    print("You do not see any initials yet. The head chair and the table's shadow still hide the floor beneath them.")
+                    print("You do not see the floor carving clearly yet. The head chair and the table's shadow still hide the marks beneath them.")
             elif in_full_trance(gs) and gs.current_room == "Study" and obj in STUDY_SURFACE_TARGETS:
                 print("The study is no archive in trance. It is an accounting chamber. Every page seems less written than sentenced.")
             elif in_weakened_trance(gs) and gs.current_room == "Study" and obj in STUDY_SURFACE_TARGETS:
@@ -1975,11 +2014,12 @@ class GameSession:
                 print("The letters are simple and formal, but the way they sit beneath the knocker makes the word feel less like a name than a demand for recognition.")
             elif obj in PHOTO_TARGETS:
                 print("The photograph shows Mother, Missy, and you as children. Grandma stands behind you all with one hand on the back of the head chair, smiling as if she owns the light itself.")
-            elif gs.current_room == "Dining Room" and obj in DINING_INITIAL_TARGETS:
-                if "initials" in room.scenery:
-                    print("The carved circle reads like a family swallowed into one mouth: V.G., S.G., O.G., and I.G. Each set of initials is cut toward the head chair.")
+            elif gs.current_room == "Dining Room" and obj in DINING_RUNE_TARGETS:
+                if "runes" in room.scenery:
+                    print(f"The carved circle is made of rune symbols: {DINING_RUNE_SEQUENCE}.")
+                    print("You cannot truly translate them, but the shape of the sequence feels like the house's name forced into older marks.")
                 else:
-                    print("There are no initials visible to read yet.")
+                    print("There are no rune symbols visible to read yet.")
             elif obj in LABEL_TARGETS and gs.current_room == "Cellar":
                 if gs.trance:
                     gs.discovered_witness = True
@@ -2034,8 +2074,9 @@ class GameSession:
                 else:
                     print("You search the door and find no handle, latch, or keyhole on this side. Only the brass gargoyle knocker and the AMON nameplate beneath it have been touched often enough to shine.")
             elif gs.current_room == "Dining Room" and obj in DINING_SEARCH_TARGETS:
-                if "initials" in room.scenery:
-                    print("With the head chair pulled aside, the marks are plain: V.G., S.G., O.G., and I.G. cut into the boards in a tight ring where the chair had hidden them.")
+                if "runes" in room.scenery:
+                    print(f"With the head chair pulled aside, the marks are plain: {DINING_RUNE_SEQUENCE}, cut into the boards in a tight ring where the chair had hidden them.")
+                    print("They look less written than placed, each symbol angled inward as if the chair were meant to receive what the marks summon.")
                 else:
                     print("You search near the floor and notice pale scrapes beneath the head chair, as if it has been dragged aside many times and carefully returned.")
             elif obj in BEHIND_PAINTING_TARGETS:
@@ -2197,7 +2238,7 @@ class GameSession:
                     if gs.ritual_branch == "ash":
                         print("Grandma's answer is almost drowned by the room itself. 'Ask 'THEM' now,' she says. 'You have already insulted their teacup, so perhaps they will favor honesty over courtesy.'")
                     elif gs.ritual_branch == "obedience":
-                        print("Grandma smiles as if your question flatters everyone present. 'They have accepted your seat for tonight,' she says. 'Do not mistake acceptance for mercy.'")
+                        print("Grandma's voice smiles as if your question flatters everyone present. 'They have accepted your seat for tonight,' she says. 'Do not mistake acceptance for mercy.'")
                     elif in_full_trance(gs):
                         print("Grandma smiles as if introducing old friends. 'They are hunger, memory, witness, and welcome,' she says. 'You have names for smaller things. I do not name them to reduce them.'")
                     elif in_weakened_trance(gs):
@@ -2214,7 +2255,7 @@ class GameSession:
                     elif in_weakened_trance(gs):
                         print("Grandma glances toward the dim hall beyond the attic door. 'They have stepped back into their frames,' she says. 'That is manners, not surrender.'")
                     else:
-                        print("Grandma gives a soft, scolding laugh. 'Family is only another word for those who were invited before you,' she says. 'The paintings remember how to listen.'")
+                        print("Grandma's voice carries a soft, scolding laugh. 'Family is only another word for those who were invited before you,' she says. 'The paintings remember how to listen.'")
                 elif i_obj in ("house", "amon"):
                     if gs.ritual_branch == "ash":
                         print("'You have wounded Amon, not ended it,' Grandma says. 'A house can bleed through more than steam.'")
@@ -2246,12 +2287,12 @@ class GameSession:
                     if gs.attic_choice is None:
                         gs.attic_choice = "question"
                         print("Grandma's fingers tighten on the arm of the chair until the wood answers with a low complaint.")
-                        print("'Little girls mistake disobedience for courage,' she says. 'Ask me about her again, and you may hear an answer you cannot survive politely.'")
+                        print("Grandma's voice tightens around each word. 'Little girls mistake disobedience for courage,' she says. 'Ask me about her again, and you may hear an answer you cannot survive politely.'")
                         print("Somewhere above you, though there is no higher room, a chorus of soft laughter passes through the rafters.")
                     else:
                         print("Grandma's fingers tighten on the arm of the chair. 'Little girls mistake disobedience for courage,' she says. 'The house is patient with neither for long.'")
                 else:
-                    print("Grandma tilts her head. 'Ask better questions, dear.'")
+                    print("Grandma's voice turns clipped and cold. 'Ask better questions, dear.'")
             elif obj in MOTHER_TARGETS and gs.current_room == "Living Room":
                 if i_obj in GRANDMA_TARGETS:
                     gs.spoke_with_mother = True
@@ -2441,9 +2482,10 @@ class GameSession:
             elif obj in ("chair", "head chair") and gs.current_room == "Dining Room":
                 room.scenery["floor"] = "The floorboards beneath the head chair are scraped nearly white. The scratches gather around a deliberate carving rather than random damage."
                 room.scenery["floorboards"] = room.scenery["floor"]
-                room.scenery["initials"] = "A circle of tiny initials is carved into the boards beneath the head chair: V.G., S.G., O.G., and I.G. Each set points inward toward the chair, as if every name was seated there in turn."
-                room.scenery["floor initials"] = room.scenery["initials"]
-                print("The head chair grates across the floor. Carved into the wood beneath it is a circle of tiny initials, all family names.")
+                room.scenery["runes"] = DINING_RUNE_TEXT
+                room.scenery["symbols"] = room.scenery["runes"]
+                room.scenery["floor runes"] = room.scenery["runes"]
+                print("The head chair grates across the floor. Carved into the wood beneath it is a tight circle of rune symbols, each mark angled toward the chair.")
             elif obj in ("papers", "desk") and gs.current_room == "Study":
                 if gs.discovered_witness:
                     print("You disturb the papers and uncover a page marked in red: 'Invitation first. Feeding second. Witness always from the bloodline.'")

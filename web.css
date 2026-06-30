@@ -13,7 +13,8 @@
   --accent: #E0A419;
   --interactive-early: #E0A419;
   --interactive: var(--interactive-early);
-  --output-height: 54vh;
+  --app-height: 100dvh;
+  --output-height: clamp(220px, calc(var(--app-height) - 250px), 54vh);
   --terminal-gutter: 12px;
   --output-padding: 28px;
   --glow-soft: 0 0 4px rgba(var(--ink-rgb), 0.34), 0 0 12px rgba(var(--ink-rgb), 0.16);
@@ -25,11 +26,12 @@
 }
 
 html {
+  min-height: var(--app-height);
   background: var(--page);
 }
 
 body {
-  min-height: 100vh;
+  min-height: var(--app-height);
   margin: 0;
   overflow-x: hidden;
   color: var(--ink);
@@ -75,6 +77,9 @@ body::after {
 
 .shell {
   position: relative;
+  display: flex;
+  min-height: var(--app-height);
+  flex-direction: column;
   width: min(1024px, calc(100% - 32px));
   margin: 0 auto;
   padding: 32px 0;
@@ -351,7 +356,8 @@ h1 {
 
 .output-frame {
   position: relative;
-  min-height: var(--output-height);
+  height: var(--output-height);
+  min-height: 0;
   max-height: var(--output-height);
   overflow: auto;
   padding: var(--output-padding);
@@ -400,8 +406,11 @@ h1 {
   text-shadow: var(--glow-strong), -1px 0 rgba(255, 48, 48, 0.2), 1px 0 rgba(60, 225, 255, 0.18);
 }
 
-body[data-trance-active="true"] .output-frame pre,
-body[data-trance-active="true"] .output-frame .room-title {
+.output-frame .transcript-chunk.trance-text {
+  color: #9ab81c;
+}
+
+.output-frame .transcript-chunk.trance-text .room-title {
   color: #9ab81c;
 }
 
@@ -409,7 +418,7 @@ body[data-trance-active="true"] .output-frame .room-title {
   color: #7da11b;
 }
 
-body[data-trance-active="true"] .output-frame .player-input-line {
+.output-frame .transcript-chunk.trance-text .player-input-line {
   color: #e0a419;
 }
 
@@ -437,7 +446,7 @@ body[data-trance-active="true"] .output-frame .player-input-line {
   text-shadow: none;
 }
 
-body[data-trance-active="true"] .output-frame .grandma-line {
+.output-frame .transcript-chunk.trance-text .grandma-line {
   color: #d43528;
 }
 
@@ -447,9 +456,14 @@ body[data-trance-active="true"] .output-frame .grandma-line {
 }
 
 @media (max-width: 620px) {
+  :root {
+    --output-height: clamp(150px, calc(var(--app-height) - 178px), 50vh);
+    --output-padding: 22px;
+  }
+
   .shell {
     width: min(100% - 20px, 1024px);
-    padding: 20px 0;
+    padding: 16px 0 max(12px, env(safe-area-inset-bottom));
   }
 
   .masthead,

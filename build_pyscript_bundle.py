@@ -53,10 +53,16 @@ def capture_output(action, *args):
     return stream.getvalue().rstrip()
 
 
-def append_output(text):
+def transcript_visual_state():
+    if session.gs.trance and not session.gs.weakened_trance:
+        return "trance"
+    return "normal"
+
+
+def append_output(text, visual_state=None):
     if not text:
         return
-    window.typeGameText(text)
+    window.typeGameText(text, visual_state or transcript_visual_state())
 
 
 def nearing_bad_ending():
@@ -152,13 +158,13 @@ def build_html():
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
     <title>House of Amon - PyScript</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IM+Fell+DW+Pica&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://pyscript.net/releases/2026.3.1/core.css" />
-    <link rel="stylesheet" href="./web.css?v=20260624-trance-input-gold" />
+    <link rel="stylesheet" href="./web.css?v=20260627-transcript-state" />
     <script type="module" src="https://pyscript.net/releases/2026.3.1/core.js"></script>
   </head>
   <body>
@@ -210,10 +216,25 @@ def build_html():
         const output = document.getElementById("game-output");
         const outputFrame = document.querySelector(".output-frame");
         const textQueue = [];
+        const transcriptChunks = [];
         const typeDelayMs = 2;
         const charsPerTick = 2;
-        let outputText = "";
+        let activeChunk = null;
         let typing = false;
+
+        function syncVisualViewportHeight() {{
+          const height = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+          document.documentElement.style.setProperty("--app-height", `${{height}}px`);
+        }}
+
+        syncVisualViewportHeight();
+
+        if (window.visualViewport) {{
+          window.visualViewport.addEventListener("resize", syncVisualViewportHeight);
+          window.visualViewport.addEventListener("scroll", syncVisualViewportHeight);
+        }}
+
+        window.addEventListener("resize", syncVisualViewportHeight);
 
         function escapeHtml(text) {{
           return text
@@ -229,7 +250,7 @@ def build_html():
         }}
 
         function isGrandmaLine(line) {{
-          return /Grandma:|Grandma(?:'s)? voice|Grandma\b.*'|'.*Grandma\s+(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)|^'[^']*'[, ]+she\s+(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)\b/.test(line);
+          return /Grandma:|Grandma(?:'s)? voice|Grandma\\b(?:[^']|'s\\b)*(?!'s\\b)'|'.*Grandma\\s+(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)|^'[^']*'[, ]+she\\s+(?:says|asks|whispers|murmurs|laughs|chuckles|answers|tells)\\b/.test(line);
         }}
 
         function isMotherLine(line) {{
@@ -237,7 +258,7 @@ def build_html():
         }}
 
         function isSpokenLine(line) {{
-          return /(?:voice|whisper|whispers|murmur|murmurs|says|asks|answers|tells|insists|calls|cries|shouts).*'|^'[^']*'[, ]+[^.]*\b(?:says|asks|whispers|murmurs|answers|tells|insists|calls|cries|shouts)\b/.test(line);
+          return /(?:voice|whisper|whispers|murmur|murmurs|says|asks|answers|tells|insists|calls|cries|shouts).*'|^'[^']*'[, ]+[^.]*\\b(?:says|asks|whispers|murmurs|answers|tells|insists|calls|cries|shouts)\\b/.test(line);
         }}
 
         const interactiveTerms = [
@@ -377,8 +398,12 @@ def build_html():
           return html;
         }}
 
-        function formatGameText(text) {{
-          return text
+        function transcriptClass(state) {{
+          return state === "trance" ? "transcript-chunk trance-text" : "transcript-chunk";
+        }}
+
+        function formatGameText(text, state = "normal") {{
+          const formattedText = text
             .split("\\n")
             .map((line) => {{
               const safeLine = escapeHtml(line);
@@ -403,6 +428,13 @@ def build_html():
               return formatPlainLine(line);
             }})
             .join("\\n");
+          return '<span class="' + transcriptClass(state) + '">' + formattedText + '</span>';
+        }}
+
+        function renderOutput() {{
+          output.innerHTML = transcriptChunks
+            .map((chunk) => formatGameText(chunk.text, chunk.state))
+            .join("");
         }}
 
         function scrollOutput() {{
@@ -411,8 +443,8 @@ def build_html():
 
         function typeNextChunk(text, index) {{
           const nextIndex = Math.min(index + charsPerTick, text.length);
-          outputText += text.slice(index, nextIndex);
-          output.innerHTML = formatGameText(outputText);
+          activeChunk.text += text.slice(index, nextIndex);
+          renderOutput();
           scrollOutput();
 
           if (nextIndex < text.length) {{
@@ -420,6 +452,7 @@ def build_html():
             return;
           }}
 
+          activeChunk = null;
           window.setTimeout(typeNextQueuedText, typeDelayMs);
         }}
 
@@ -432,17 +465,25 @@ def build_html():
 
           typing = true;
           output.classList.add("is-typing");
-          const nextText = textQueue.shift();
-          const prefix = outputText ? "\\n\\n" : "";
-          typeNextChunk(prefix + nextText, 0);
+          const nextItem = textQueue.shift();
+          const prefix = transcriptChunks.length ? "\\n\\n" : "";
+          activeChunk = {{
+            text: "",
+            state: nextItem.state
+          }};
+          transcriptChunks.push(activeChunk);
+          typeNextChunk(prefix + nextItem.text, 0);
         }}
 
-        window.typeGameText = (text) => {{
+        window.typeGameText = (text, state = "normal") => {{
           if (!text) {{
             return;
           }}
 
-          textQueue.push(String(text));
+          textQueue.push({{
+            text: String(text),
+            state: state === "trance" ? "trance" : "normal"
+          }});
           if (!typing) {{
             typeNextQueuedText();
           }}

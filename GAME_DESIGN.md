@@ -285,7 +285,7 @@ Useful supported variations:
 Design rule for responses:
 
 - If the player names visible scenery, give a specific response even when the object cannot be taken.
-- Avoid saying "There is no X here" for important visible room features like the candelabrum, hearth, tools, workbench, paintings, doors, keyhole, initials, flame, grave, or nameplate.
+- Avoid saying "There is no X here" for important visible room features like the candelabrum, hearth, tools, workbench, paintings, doors, keyhole, floor runes, flame, grave, or nameplate.
 - If the player attacks a recognized noun that is not a meaningful combat target, answer with `You can't attack the [noun].`
 - Do not reveal an undiscovered clue, object, or puzzle solution before the player has encountered the relevant source.
 
