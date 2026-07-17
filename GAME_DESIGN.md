@@ -17,6 +17,10 @@ The tone should remain gothic, intimate, claustrophobic, and dreamlike. The horr
 - Avoid dead ends caused by hidden exact wording, missing optional clues, or early player mistakes.
 - Keep future originality work available without losing the current Amon build.
 
+## Development Note
+
+The current build was developed and iterated with assistance from Codex and GPT-5.5. That assistance has included Python implementation, parser expansion, puzzle design review, documentation updates, browser UI refinement, and playthrough-based testing.
+
 ## Current Build Snapshot
 
 The current build is a playable Python parser adventure with a PyScript browser wrapper.

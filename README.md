@@ -2,6 +2,10 @@
 
 A gothic parser-based text adventure about a family estate, a locked attic, a ritual teapot, and the voices the house calls guests.
 
+## Development Note
+
+This project was developed and iterated with assistance from Codex and GPT-5.5, including support for Python implementation, parser behavior, documentation, playtesting, and browser UI refinement.
+
 The current build can be played two ways:
 
 - In a terminal with Python.
@@ -17,7 +21,11 @@ python3 main.py
 
 ## Play In The Browser
 
-Open `index.html` in a browser. The page loads the Python runtime, starts the game automatically, and shows a command input labeled `What do you do?`
+Play the public browser version here:
+
+[https://mstandev.github.io/text-adventure/](https://mstandev.github.io/text-adventure/)
+
+For local development, open `index.html` in a browser. The page loads the Python runtime, starts the game automatically, and shows a command input labeled `What do you do?`
 
 If your browser blocks the local file, serve the folder locally:
 
