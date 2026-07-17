@@ -1331,7 +1331,7 @@ DINING_FLOOR_TARGETS = frozenset((
 ))
 
 DINING_RUNE_SEQUENCE = "ᚨ ᛗ ᛟ ᚾ"
-DINING_RUNE_TEXT = f"A circle of rune symbols is carved into the boards beneath the head chair: {DINING_RUNE_SEQUENCE}. Each mark points inward toward the chair, as if the seat is meant to gather the name rather than hold a body."
+DINING_RUNE_TEXT = f"A circle of rune symbols is carved into the boards beneath the head chair: {DINING_RUNE_SEQUENCE}. Each rune leans inward, as if the house has arranged the marks into a listening shape for its own name."
 
 DINING_RUNE_TARGETS = frozenset((
     "carving", "floor carving", "marks", "carved marks", "letters",
