@@ -4,7 +4,7 @@ A gothic parser-based text adventure about a family estate, a locked attic, a ri
 
 ## Development Note
 
-This project was developed and iterated with assistance from Codex and GPT-5.5, including support for Python implementation, parser behavior, documentation, playtesting, and browser UI refinement.
+This project was developed and iterated with assistance from Codex and GPT-5.6, including support for Python implementation, parser behavior, documentation, playtesting, and browser UI refinement.
 
 The current build can be played two ways:
 

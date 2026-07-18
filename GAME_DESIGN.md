@@ -19,7 +19,7 @@ The tone should remain gothic, intimate, claustrophobic, and dreamlike. The horr
 
 ## Development Note
 
-The current build was developed and iterated with assistance from Codex and GPT-5.5. That assistance has included Python implementation, parser expansion, puzzle design review, documentation updates, browser UI refinement, and playthrough-based testing.
+The current build was developed and iterated with assistance from Codex and GPT-5.6. That assistance has included Python implementation, parser expansion, puzzle design review, documentation updates, browser UI refinement, and playthrough-based testing.
 
 ## Current Build Snapshot
 
